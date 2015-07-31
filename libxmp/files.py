@@ -50,6 +50,7 @@ from . import exempi as _cexempi
 
 __all__ = ['XMPFiles']
 
+
 class XMPFiles(object):
     """API for access to the "main" metadata in a file.
 
@@ -68,7 +69,7 @@ class XMPFiles(object):
     .. todo::
         Documentation
     """
-    def __init__(self, **kwargs ):
+    def __init__(self, **kwargs):
         self._file_path = None
         self.xmpfileptr = _cexempi.files_new()
 
@@ -76,8 +77,7 @@ class XMPFiles(object):
             file_path = kwargs['file_path']
             del kwargs['file_path']
 
-            self.open_file( file_path, **kwargs )
-
+            self.open_file(file_path, **kwargs)
 
     def __repr__(self):
         msg = "XMPFiles("
@@ -87,17 +87,17 @@ class XMPFiles(object):
             msg += "file_path='{0}')"
             msg = msg.format(self._file_path)
         return msg
+
     def __del__(self):
         """
         Free up the memory associated with the XMP file instance.
         """
-        _cexempi.files_free( self.xmpfileptr )
+        _cexempi.files_free(self.xmpfileptr)
 
-
-    def open_file(self, file_path, **kwargs ):
+    def open_file(self, file_path, **kwargs):
         """
-        Open a given file and read XMP from file. File must be closed again with
-        :func:`close_file`
+        Open a given file and read XMP from file. File must be closed again
+        with :func:`close_file`
 
         :param str file_path: Path to file to open.
         :raises XMPError: in case of errors.
@@ -106,17 +106,17 @@ class XMPFiles(object):
             Change signature into using kwargs to set option flag
         """
         if kwargs:
-            open_flags = options_mask( XMP_OPEN_OPTIONS, **kwargs )
+            open_flags = options_mask(XMP_OPEN_OPTIONS, **kwargs)
         else:
             open_flags = XMP_OPEN_NOOPTION
 
-        if self._file_path != None:
+        if self._file_path is not None:
             raise XMPError('A file is already open - close it first.')
 
-        _cexempi.files_open( self.xmpfileptr, file_path, open_flags )
+        _cexempi.files_open(self.xmpfileptr, file_path, open_flags)
         self._file_path = file_path
 
-    def close_file( self, close_flags=XMP_CLOSE_NOOPTION):
+    def close_file(self, close_flags=XMP_CLOSE_NOOPTION):
         """
         Close file after use. XMP will not be written to file until
         this method has been called.
@@ -127,10 +127,10 @@ class XMPFiles(object):
         .. todo::
             Change signature into using kwargs to set option flag
         """
-        _cexempi.files_close( self.xmpfileptr, close_flags )
+        _cexempi.files_close(self.xmpfileptr, close_flags)
         self._file_path = None
 
-    def get_xmp( self ):
+    def get_xmp(self):
         """
         Get XMP from file.
 
@@ -140,35 +140,35 @@ class XMPFiles(object):
         xmpptr = _cexempi.files_get_new_xmp(self.xmpfileptr)
 
         if xmpptr:
-            return XMPMeta( _xmp_internal_ref = xmpptr )
+            return XMPMeta(_xmp_internal_ref=xmpptr)
         else:
             return None
 
-    def put_xmp( self, xmp_obj ):
+    def put_xmp(self, xmp_obj):
         """
         Write XMPMeta object to file. See also :func:`can_put_xmp`.
 
         :param xmp_obj: An :class:`libxmp.core.XMPMeta` object
         """
         xmpptr = xmp_obj.xmpptr
-        _cexempi.files_put_xmp( self.xmpfileptr, xmpptr )
+        _cexempi.files_put_xmp(self.xmpfileptr, xmpptr)
 
-    def can_put_xmp( self, xmp_obj ):
+    def can_put_xmp(self, xmp_obj):
         """Determine if XMP can be written into the file.
 
         Determines if a given :class:`libxmp.core.XMPMeta` object can be
         written into the file.
 
         :param xmp_obj: An :class:`libxmp.core.XMPMeta` object
-        :return:  true if :class:`libxmp.core.XMPMeta` object writeable to file.
+        :return:  true if :class:`libxmp.core.XMPMeta` object writeable to file
         :rtype: bool
         """
-        if not isinstance( xmp_obj, XMPMeta ):
+        if not isinstance(xmp_obj, XMPMeta):
             raise XMPError('Not a XMPMeta object')
 
         xmpptr = xmp_obj.xmpptr
 
-        if xmpptr != None:
+        if xmpptr is not None:
             return _cexempi.files_can_put_xmp(self.xmpfileptr, xmpptr)
         else:
             return False

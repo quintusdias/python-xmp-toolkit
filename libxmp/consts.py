@@ -41,16 +41,16 @@ Constants from exempi headers.
 #
 # Open options
 #
-XMP_OPEN_NOOPTION = 0x00000000 #< No open option
-XMP_OPEN_READ = 0x00000001 #< Open for read-only access.
-XMP_OPEN_FORUPDATE = 0x00000002 #< Open for reading and writing.
-XMP_OPEN_ONLYXMP = 0x00000004 #< Only the XMP is wanted, allows space/time optimizations.
+XMP_OPEN_NOOPTION   = 0x00000000 #< No open option
+XMP_OPEN_READ       = 0x00000001 #< Open for read-only access.
+XMP_OPEN_FORUPDATE  = 0x00000002 #< Open for reading and writing.
+XMP_OPEN_ONLYXMP    = 0x00000004 #< Only the XMP is wanted, allows space/time optimizations.
 XMP_OPEN_CACHETNAIL = 0x00000008 #< Cache thumbnail if possible,  GetThumbnail will be called.
-XMP_OPEN_STRICTLY = 0x00000010 #< Be strict about locating XMP and reconciling with other forms.
-XMP_OPEN_USESMARTHANDLER = 0x00000020 #< Require the use of a smart handler (Text files, PDF and Illustrator are incompatible with this option).
+XMP_OPEN_STRICTLY   = 0x00000010 #< Be strict about locating XMP and reconciling with other forms.
+XMP_OPEN_USESMARTHANDLER   = 0x00000020 #< Require the use of a smart handler (Text files, PDF and Illustrator are incompatible with this option).
 XMP_OPEN_USEPACKETSCANNING = 0x00000040 #< Force packet scanning, don't use a smart handler.
-XMP_OPEN_LIMITSCANNING = 0x00000080 #< Only packet scan files "known" to need scanning (Text files, PDF are incompatible with this option).
-XMP_OPEN_INBACKGROUND = 0x10000000  #< Set if calling from background thread.
+XMP_OPEN_LIMITSCANNING     = 0x00000080 #< Only packet scan files "known" to need scanning (Text files, PDF are incompatible with this option).
+XMP_OPEN_INBACKGROUND      = 0x10000000  #< Set if calling from background thread.
 
 #
 # Close options
@@ -151,8 +151,6 @@ XMP_PROP_ARRAY_IS_ALT    = 0x00000800  # Implies XMP_PropArrayIsOrdered,items ar
 
 # Additional struct and array options.
 XMP_PROP_ARRAY_IS_ALTTEXT = 0x00001000  # Implies kXMP_PropArrayIsAlternate,items are localized text.
-# kXMP_InsertBeforeItem  = 0x00004000L  ! Used by SetXyz functions. */
-# kXMP_InsertAfterItem   = 0x00008000L  ! Used by SetXyz functions. */
 
 # Other miscellaneous options
 XMP_PROP_IS_ALIAS         = 0x00010000 #This property is an alias name for another property.
@@ -160,15 +158,21 @@ XMP_PROP_HAS_ALIASES      = 0x00020000 #This property is the base value for a se
 XMP_PROP_IS_INTERNAL      = 0x00040000 #This property is an "internal" property, owned by applications.
 XMP_PROP_IS_STABLE        = 0x00100000 #This property is not derived from the document content.
 XMP_PROP_IS_DERIVED       = 0x00200000 #This property is derived from the document content.
-# kXMPUtil_AllowCommas   = 0x10000000L  ! Used by TXMPUtils::CatenateArrayItems and ::SeparateArrayItems.
-# kXMP_DeleteExisting    = 0x20000000L  ! Used by TXMPMeta::SetXyz functions to delete any pre-existing property.
-XMP_IS_SCHEMA            = 0x80000000  #Returned by iterators - #define to avoid warnings - Not defined by Exempi
-XMP_PROP_IS_SCHEMA            = 0x80000000  #Returned by iterators - #define to avoid warnings - Not defined by Exempi
+
+#Returned by iterators - #define to avoid warnings - Not defined by Exempi
+XMP_IS_SCHEMA = 0x80000000
+
+# Returned by iterators - #define to avoid warnings - Not defined by Exempi
+XMP_PROP_IS_SCHEMA = 0x80000000
 
 # Multiple flag masks
-XMP_PROP_ARRAY_FORM_MASK  = XMP_PROP_VALUE_IS_ARRAY    | XMP_PROP_ARRAY_IS_ORDERED | XMP_PROP_ARRAY_IS_ALT | XMP_PROP_ARRAY_IS_ALTTEXT
-XMP_PROP_COMPOSITE_MASK   = XMP_PROP_VALUE_IS_STRUCT | XMP_PROP_ARRAY_FORM_MASK  #Is it simple or composite (array or struct)?
-XMP_IMPL_RESERVED_MASK    = 0x70000000   # Reserved for transient use by the implementation.
+XMP_PROP_ARRAY_FORM_MASK = XMP_PROP_VALUE_IS_ARRAY | XMP_PROP_ARRAY_IS_ORDERED | XMP_PROP_ARRAY_IS_ALT | XMP_PROP_ARRAY_IS_ALTTEXT
+
+#Is it simple or composite (array or struct)?
+XMP_PROP_COMPOSITE_MASK = XMP_PROP_VALUE_IS_STRUCT | XMP_PROP_ARRAY_FORM_MASK
+
+# Reserved for transient use by the implementation.
+XMP_IMPL_RESERVED_MASK = 0x70000000
 
 #####################
 # Common Namespaces #
@@ -317,24 +321,27 @@ XMP_OPEN_OPTIONS = {
 
 # Definition of XMPIterator.skip()'s option names
 XMP_SKIP_OPTIONS = {
-    'iter_skipsubtree'  : XMP_ITER_SKIPSUBTREE,
-    'iter_skipsiblings' : XMP_ITER_SKIPSIBLINGS
+    'iter_skipsubtree': XMP_ITER_SKIPSUBTREE,
+    'iter_skipsiblings': XMP_ITER_SKIPSIBLINGS
 }
 
-def has_option ( xmp_option, bitmask ):
-    return bool( xmp_option & bitmask )
 
-def options_mask( xmp_options, **kwargs ):
+def has_option(xmp_option, bitmask):
+    return bool(xmp_option & bitmask)
+
+
+def options_mask(xmp_options, **kwargs):
     """
     Creates the options bit mask for consumption by exempi C functions.
 
     Example::
 
-      opt = consts.options_mask( consts.XMP_SERIAL_OPTIONS, **kwargs )
+      opt = consts.options_mask(consts.XMP_SERIAL_OPTIONS, **kwargs)
 
     or::
 
-      opt = consts.options_mask( consts.XMP_SERIAL_OPTIONS, omit_packet_wrapper=True )
+      opt = consts.options_mask(consts.XMP_SERIAL_OPTIONS,
+                                omit_packet_wrapper=True)
     """
     bitmask = 0x0
 

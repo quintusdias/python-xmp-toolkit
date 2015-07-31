@@ -43,6 +43,7 @@ from .exempi import EXEMPI as _cexempi
 
 __all__ = ['terminate', 'object_to_dict', 'file_to_dict']
 
+
 def object_to_dict(xmp):
     """
     Extracts all XMP data from a given XMPMeta instance organizing it into a
@@ -61,10 +62,11 @@ def object_to_dict(xmp):
 
     return dxmp
 
+
 def file_to_dict(file_path):
     """
-    Extracts all XMP data from a given file organizing it into a standard Python
-    dictionary.
+    Extracts all XMP data from a given file organizing it into a standard
+    Python dictionary.
 
     :param file_path: Path to file to open.
     :return: An empty dictionary if there's no valid XMP in the file passed as
@@ -76,13 +78,12 @@ def file_to_dict(file_path):
     xmpfile = XMPFiles()
 
     try:
-        xmpfile.open_file( file_path, open_read=True )
+        xmpfile.open_file(file_path, open_read=True)
         xmp = xmpfile.get_xmp()
     except XMPError:
         return {}
 
     return object_to_dict(xmp)
-
 
 
 def terminate():
