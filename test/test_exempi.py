@@ -36,6 +36,8 @@ from libxmp.consts import XMP_OPEN_READ, XMP_OPEN_FORUPDATE
 from libxmp.consts import XMP_PROP_HAS_QUALIFIERS, XMP_PROP_IS_QUALIFIER
 from libxmp.consts import XMP_PROP_COMPOSITE_MASK
 
+from libxmp import consts
+
 
 class TestInit(unittest.TestCase):
     """Corresponds to testinit.cpp.
@@ -397,13 +399,63 @@ class TestExempi(unittest.TestCase):
         file_path, opts, file_format, flags = exempi.files_get_file_info(xfptr)
         self.assertEqual(opts, XMP_OPEN_READ)
         self.assertEqual(file_format, libxmp.consts.XMP_FT_JPEG)
-        self.assertEqual(flags, 0x27f)  # 0x27f?
+
+        expected_flags = (consts.XMP_FMT_CAN_INJECT_XMP
+                          | consts.XMP_FMT_CAN_EXPAND
+                          | consts.XMP_FMT_CAN_REWRITE
+                          | consts.XMP_FMT_PREFERS_IN_PLACE
+                          | consts.XMP_FMT_CAN_RECONCILE
+                          | consts.XMP_FMT_ALLOWS_ONLY_XMP
+                          | consts.XMP_FMT_RETURNS_RAW_PACKET
+                          | consts.XMP_FMT_ALLOW_SAFE_UPDATE)
+        self.assertEqual(flags, expected_flags)
         self.assertEqual(filename, file_path)
 
         xmp = exempi.files_get_xmp(xfptr)
         the_prop, _ = exempi.get_property(xmp, NS_PHOTOSHOP, "ICCProfile")
         self.assertEqual(the_prop, "sRGB IEC61966-2.1")
         exempi.files_free(xfptr)
+
+    def test_xmp_pdf(self):
+        """
+        PDF is problematic
+        """
+        filename = pkg_resources.resource_filename(__name__,
+                                                   "samples/BlueSquare.pdf")
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg") as tfile:
+            shutil.copyfile(filename, tfile.name)
+
+            xfptr = exempi.files_open_new(filename, XMP_OPEN_READ)
+            fmt = exempi.files_check_file_format(filename)
+
+            # Should be XMP_FT_PDF, but libexempi gets this wrong.
+            self.assertEqual(fmt, libxmp.consts.XMP_FT_UNKNOWN)
+
+            file_path, opts, file_format, flags = exempi.files_get_file_info(xfptr)
+            self.assertEqual(opts, XMP_OPEN_READ)
+            self.assertEqual(file_format, libxmp.consts.XMP_FT_UNKNOWN)
+
+            # The flags are significantly different for PDF than JPG.  Missing
+            # each of the following
+            #
+            # XMP_FMT_CAN_INJECT_XMP
+            # XMP_FMT_CAN_EXPAND
+            # XMP_FMT_CAN_REWRITE
+            # XMP_FMT_PREFERS_IN_PLACE
+            # XMP_FMT_CAN_RECONCILE
+            #
+            expected_flags = (consts.XMP_FMT_ALLOWS_ONLY_XMP
+                              | consts.XMP_FMT_RETURNS_RAW_PACKET
+                              | consts.XMP_FMT_ALLOW_SAFE_UPDATE)
+            self.assertEqual(flags, expected_flags)
+
+            self.assertEqual(filename, file_path)
+
+            xmp = exempi.files_get_xmp(xfptr)
+            prop, _ = exempi.get_property(xmp, NS_XAP, "CreatorTool")
+            self.assertEqual(prop, "Adobe InDesign CS2 (4.0)")
+            exempi.files_free(xfptr)
 
     def test_formats(self):
         """Verify that check_file_format function works as expected."""

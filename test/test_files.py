@@ -34,7 +34,7 @@
 
 import os
 import os.path
-import pkg_resources
+import pkg_resources as pkg
 import re
 import shutil
 import sys
@@ -80,8 +80,7 @@ class XMPFilesTestCase(unittest.TestCase):
 
         # If the XMPFiles object has a file associated with it, then use a
         # regular expression to match the output.
-        filename = pkg_resources.resource_filename(__name__,
-                                                   "samples/BlueSquare.jpg")
+        filename = pkg.resource_filename(__name__, "samples/BlueSquare.jpg")
         xmpf.open_file(file_path=filename)
         actual_value = str(xmpf)
 
@@ -94,8 +93,7 @@ class XMPFilesTestCase(unittest.TestCase):
         # The BOM cannot be decoded from utf-8 into ascii, so a 2.7 XMPMeta
         # object's __repr__ function would error out on it.
 
-        filename = pkg_resources.resource_filename(__name__,
-                                                   "samples/BlueSquare.jpg")
+        filename = pkg.resource_filename(__name__, "samples/BlueSquare.jpg")
         xmpf = XMPFiles()
         xmpf.open_file(file_path=filename)
         xmp = xmpf.get_xmp()
@@ -115,25 +113,32 @@ class XMPFilesTestCase(unittest.TestCase):
                             "Test file does not exists.")
 
     def test_open_file(self):
-        # Non-existing file.
+
+        # open a file that does not exist
         xmpfile = XMPFiles()
         with self.assertRaises(IOError):
             xmpfile.open_file('')
 
+        # can't open a second file until the first is closed
         xmpfile = XMPFiles()
         xmpfile.open_file(self.samplefiles[0])
-        self.assertRaises(XMPError, xmpfile.open_file, self.samplefiles[0])
-        self.assertRaises(XMPError, xmpfile.open_file, self.samplefiles[1])
+        with self.assertRaises(XMPError):
+            xmpfile.open_file(self.samplefiles[0])
+            xmpfile.open_file(self.samplefiles[1])
         xmpfile.close_file()
-        xmpfile.open_file(self.samplefiles[1])
-        self.assertRaises(XMPError, xmpfile.open_file, self.samplefiles[0])
 
-        # Open all sample files.
+        xmpfile.open_file(self.samplefiles[1])
+        with self.assertRaises(XMPError):
+            xmpfile.open_file(self.samplefiles[0])
+        xmpfile.close_file()
+
+        # open all sample files.
         for filename in self.samplefiles:
             xmpfile = XMPFiles()
             xmpfile.open_file(filename)
+            xmpfile.close_file()
 
-        # Try using init
+        # try using a constructor
         for filename in self.samplefiles:
             xmpfile = XMPFiles(file_path=filename)
 
@@ -157,28 +162,24 @@ class XMPFilesTestCase(unittest.TestCase):
                 xmpfile.open_file(filename, **kwargs)
 
     def test_open_use_smarthandler(self):
-        """Verify this library failure."""
+        """Verify library failure."""
         # Issue 5
-        filenames = [pkg_resources.resource_filename(__name__,
-                                                     "samples/BlueSquare.pdf"),
-                     pkg_resources.resource_filename(__name__,
-                                                     "samples/BlueSquare.ai"),
-                     pkg_resources.resource_filename(__name__,
-                                                     "samples/BlueSquare.xmp")]
+        lst = ['BlueSquare.pdf', 'BlueSquare.ai', 'BlueSquare.xmp']
+
         xmpfile = XMPFiles()
-        for filename in filenames:
+        for item in lst:
+            filename = pkg.resource_filename(__name__, item)
             with self.assertRaises(XMPError):
                 xmpfile.open_file(filename, open_usesmarthandler=True)
 
     def test_open_open_limitscanning(self):
         """Verify this library failure."""
         # Issue 5
-        filenames = [pkg_resources.resource_filename(__name__,
-                                                     "samples/BlueSquare.pdf"),
-                     pkg_resources.resource_filename(__name__,
-                                                     "samples/BlueSquare.xmp")]
+        lst = ['BlueSquare.pdf', 'BlueSquare.xmp']
+
         xmpfile = XMPFiles()
-        for filename in filenames:
+        for item in lst:
+            filename = pkg.resource_filename(__name__, item)
             with self.assertRaises(XMPError):
                 xmpfile.open_file(filename, open_limitscanning=True)
 
@@ -194,14 +195,9 @@ class XMPFilesTestCase(unittest.TestCase):
                 # See test_exempi_error()
                 if not self.flg_fmt_combi(flg, fmt):
                     xmpfile = XMPFiles(file_path=filename, **kwargs)
-                    try:
-                        xmp = xmpfile.get_xmp()
-                        self.assertTrue(isinstance(xmp, XMPMeta),
-                                        "Not an XMPMeta object")
-                    except XMPError:
-                        print(filename)
-                        print(flg)
-                        print(fmt)
+                    xmp = xmpfile.get_xmp()
+                    self.assertTrue(isinstance(xmp, XMPMeta),
+                                    "Not an XMPMeta object")
                     xmpfile.close_file()
 
     def test_can_put_xmp(self):
@@ -268,8 +264,7 @@ class XMPFilesTestCase(unittest.TestCase):
         So loading a sidecar file and call can_put_xmp will kill python
         interpreter since a C++ exception is thrown.
         """
-        filename = pkg_resources.resource_filename(__name__,
-                                                   "samples/sig05-002a.xmp")
+        filename = pkg.resource_filename(__name__, "samples/sig05-002a.xmp")
         xmpfile = XMPFiles()
         xmpfile.open_file(filename, open_forupdate=True)
         xmp = xmpfile.get_xmp()
@@ -290,8 +285,7 @@ class XMPFilesTestCase(unittest.TestCase):
     def test_tiff_smarthandler(self):
         """Verify action of TIFF smarthandler when tag length > 255"""
         # See issue 12
-        srcfile = pkg_resources.resource_filename(__name__,
-                                                  "fixtures/zeros.tif")
+        srcfile = pkg.resource_filename(__name__, "fixtures/zeros.tif")
         with tempfile.NamedTemporaryFile(suffix='.tif') as tfile:
             shutil.copyfile(srcfile, tfile.name)
 
