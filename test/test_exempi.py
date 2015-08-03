@@ -32,6 +32,7 @@ from libxmp.consts import XMP_NS_CameraRaw as NS_CAMERA_RAW_SETTINGS
 from libxmp.consts import XMP_ITERATOR_OPTIONS, XMP_SERIAL_OPTIONS
 from libxmp.consts import XMP_SKIP_OPTIONS
 from libxmp.consts import XMP_CLOSE_SAFEUPDATE, XMP_CLOSE_NOOPTION
+from libxmp.consts import XMP_OPEN_USEPACKETSCANNING, XMP_OPEN_STRICTLY
 from libxmp.consts import XMP_OPEN_READ, XMP_OPEN_FORUPDATE
 from libxmp.consts import XMP_PROP_HAS_QUALIFIERS, XMP_PROP_IS_QUALIFIER
 from libxmp.consts import XMP_PROP_COMPOSITE_MASK
@@ -439,6 +440,33 @@ class TestExempi(unittest.TestCase):
             prop, _ = exempi.get_property(xmp2, NS_DC, "Creator")
             self.assertEqual(prop, "moi")
 
+    def test_pdf_no_existing_xmp(self):
+        """
+        Write to PDF file where no XMP packet exists.
+
+        See issue 40
+        """
+        filename = pkg_resources.resource_filename(__name__,
+                                                   "fixtures/zeros.pdf")
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tfile:
+            shutil.copyfile(filename, tfile.name)
+
+            flags = XMP_OPEN_FORUPDATE | XMP_OPEN_USEPACKETSCANNING
+            flags = XMP_OPEN_FORUPDATE | XMP_OPEN_STRICTLY
+            xfptr = exempi.files_open_new(tfile.name, flags)
+            xmp = exempi.new_empty()
+
+            exempi.set_property(xmp, NS_DC, "Creator", "moi", 0)
+            exempi.files_put_xmp(xfptr, xmp)
+            exempi.files_close(xfptr, XMP_CLOSE_SAFEUPDATE)
+            exempi.files_free(xfptr)
+
+            xfptr2 = exempi.files_open_new(tfile.name, XMP_OPEN_READ)
+            xmp2 = exempi.files_get_new_xmp(xfptr2)
+            prop, _ = exempi.get_property(xmp2, NS_DC, "Creator")
+            self.assertEqual(prop, "moi")
+
     def test_xmp_update_png(self):
         """
         Write to PNG file where an XMP packet already exists.
@@ -472,9 +500,8 @@ class TestExempi(unittest.TestCase):
             shutil.copyfile(filename, tfile.name)
 
             xfptr = exempi.files_open_new(tfile.name, XMP_OPEN_FORUPDATE)
-            xmp = exempi.new_empty()
+            xmp = xfptr.get_xmp()
 
-            xmp = exempi.files_get_xmp(xfptr)
             exempi.set_property(xmp, NS_PHOTOSHOP, "ICCProfile", "foo", 0)
             exempi.files_put_xmp(xfptr, xmp)
             exempi.files_close(xfptr, XMP_CLOSE_SAFEUPDATE)
