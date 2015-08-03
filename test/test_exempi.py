@@ -416,6 +416,75 @@ class TestExempi(unittest.TestCase):
         self.assertEqual(the_prop, "sRGB IEC61966-2.1")
         exempi.files_free(xfptr)
 
+    def test_png_no_existing_xmp(self):
+        """
+        Write to PNG file where no XMP packet exists.
+        """
+        filename = pkg_resources.resource_filename(__name__,
+                                                   "fixtures/zeros.png")
+
+        with tempfile.NamedTemporaryFile(suffix=".png") as tfile:
+            shutil.copyfile(filename, tfile.name)
+
+            xfptr = exempi.files_open_new(tfile.name, XMP_OPEN_FORUPDATE)
+            xmp = exempi.new_empty()
+
+            exempi.set_property(xmp, NS_DC, "Creator", "moi", 0)
+            exempi.files_put_xmp(xfptr, xmp)
+            exempi.files_close(xfptr, XMP_CLOSE_SAFEUPDATE)
+            exempi.files_free(xfptr)
+
+            xfptr2 = exempi.files_open_new(tfile.name, XMP_OPEN_READ)
+            xmp2 = exempi.files_get_new_xmp(xfptr2)
+            prop, _ = exempi.get_property(xmp2, NS_DC, "Creator")
+            self.assertEqual(prop, "moi")
+
+    def test_xmp_update_png(self):
+        """
+        Write to PNG file where an XMP packet already exists.
+        """
+        filename = pkg_resources.resource_filename(__name__,
+                                                   "samples/BlueSquare.png")
+
+        with tempfile.NamedTemporaryFile(suffix=".png") as tfile:
+            shutil.copyfile(filename, tfile.name)
+
+            xfptr = exempi.files_open_new(tfile.name, XMP_OPEN_FORUPDATE)
+            xmp = exempi.files_get_xmp(xfptr)
+            exempi.set_property(xmp, NS_PHOTOSHOP, "ICCProfile", "foo", 0)
+            exempi.files_put_xmp(xfptr, xmp)
+            exempi.files_close(xfptr, XMP_CLOSE_SAFEUPDATE)
+            exempi.files_free(xfptr)
+
+            xfptr2 = exempi.files_open_new(tfile.name, XMP_OPEN_READ)
+            xmp2 = exempi.files_get_new_xmp(xfptr2)
+            prop, _ = exempi.get_property(xmp2, NS_PHOTOSHOP, "ICCProfile")
+            self.assertEqual(prop, "foo")
+
+    def test_xmp_update_pdf(self):
+        """
+        Write to PDF file where an XMP packet already exists.
+        """
+        filename = pkg_resources.resource_filename(__name__,
+                                                   "samples/BlueSquare.pdf")
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tfile:
+            shutil.copyfile(filename, tfile.name)
+
+            xfptr = exempi.files_open_new(tfile.name, XMP_OPEN_FORUPDATE)
+            xmp = exempi.new_empty()
+
+            xmp = exempi.files_get_xmp(xfptr)
+            exempi.set_property(xmp, NS_PHOTOSHOP, "ICCProfile", "foo", 0)
+            exempi.files_put_xmp(xfptr, xmp)
+            exempi.files_close(xfptr, XMP_CLOSE_SAFEUPDATE)
+            exempi.files_free(xfptr)
+
+            xfptr2 = exempi.files_open_new(tfile.name, XMP_OPEN_READ)
+            xmp2 = exempi.files_get_new_xmp(xfptr2)
+            prop, _ = exempi.get_property(xmp2, NS_PHOTOSHOP, "ICCProfile")
+            self.assertEqual(prop, "foo")
+
     def test_xmp_pdf(self):
         """
         PDF is problematic
