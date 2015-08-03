@@ -305,6 +305,27 @@ class XMPFilesTestCase(unittest.TestCase):
 
             self.assertEqual(prop, blurb * 10)
 
+    def test_update_pdf(self):
+        """Verify that we can update existing XMP in a PDF"""
+        # See issue 40
+        srcfile = pkg.resource_filename(__name__, "samples/BlueSquare.pdf")
+        with tempfile.NamedTemporaryFile(suffix='.pdf') as tfile:
+            shutil.copyfile(srcfile, tfile.name)
+
+            xmpf = XMPFiles()
+            xmpf.open_file(tfile.name, open_forupdate=True)
+            xmp = xmpf.get_xmp()
+            xmp.set_property(NS_PHOTOSHOP, "ICCProfile", "foo")
+            xmpf.put_xmp(xmp)
+            xmpf.close_file()
+
+            xmpf.open_file(tfile.name)
+            xmp = xmpf.get_xmp()
+            prop = xmp.get_property(NS_PHOTOSHOP, "ICCProfile")
+            xmpf.close_file()
+
+            self.assertEqual(prop, "foo")
+
 
 def suite():
     the_suite = unittest.TestSuite()
