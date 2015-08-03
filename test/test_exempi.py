@@ -500,7 +500,7 @@ class TestExempi(unittest.TestCase):
             shutil.copyfile(filename, tfile.name)
 
             xfptr = exempi.files_open_new(tfile.name, XMP_OPEN_FORUPDATE)
-            xmp = xfptr.get_xmp()
+            xmp = exempi.files_get_xmp(xfptr)
 
             exempi.set_property(xmp, NS_PHOTOSHOP, "ICCProfile", "foo", 0)
             exempi.files_put_xmp(xfptr, xmp)
