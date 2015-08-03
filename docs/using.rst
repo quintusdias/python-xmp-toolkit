@@ -89,6 +89,7 @@ Check if XMP document can be written to file and write it:
 
 >>> xmpfile.can_put_xmp(xmp)
 True
+>>> xmpfile.put_xmp(xmp)
 
 XMP document is not written to the file, before the file
 is closed:
