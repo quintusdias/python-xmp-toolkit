@@ -33,14 +33,10 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 
-import ctypes
-import ctypes.util
-from ctypes.util import find_library
-import os
-
 class ExempiLoadError(Exception):
     """ Error signaling that the Exempi library cannot be loaded. """
     pass
+
 
 class XMPError(Exception):
     """ General XMP Error. """
@@ -52,8 +48,8 @@ from . import files, core, version
 from .files import XMPFiles
 __version__ = version.VERSION
 
-__all__ = ['XMPMeta', 'XMPFiles', 'XMPError', 'ExempiLoadError', 'files',
-           'core']
+__all__ = ['XMPMeta', 'XMPFiles', 'XMPError', 'XMPIterator', 'ExempiLoadError',
+           'files', 'core']
 
 from . import exempi
 exempi.init()
