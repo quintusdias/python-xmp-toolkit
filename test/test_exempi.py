@@ -37,7 +37,6 @@ from libxmp.consts import XMP_PROP_COMPOSITE_MASK
 
 from libxmp import consts
 
-_CYGWIN = platform.system().startswith('CYGWIN')
 
 class TestInit(unittest.TestCase):
     """Corresponds to testinit.cpp.
@@ -80,7 +79,6 @@ class TestPythonXmpToolkit(unittest.TestCase):
         with self.assertRaises(IOError):
             exempi.files_open_new('notthere.xmp', XMP_OPEN_READ)
 
-    @unittest.skipIf(_CYGWIN, 'CYGWIN issue')
     def test_file_not_there_check_file_format(self):
         """
         The library does not catch comfortably, so we perform our own check.
@@ -284,7 +282,6 @@ class TestExempi(unittest.TestCase):
 
         exempi.free(xmp)
 
-    @unittest.skipIf(_CYGWIN, 'Cygwin issue')
     def test_xmpfiles_write(self):
         """According to test-xmpfiles-write.cpp"""
         filename = pkg_resources.resource_filename(__name__,
@@ -389,7 +386,6 @@ class TestExempi(unittest.TestCase):
 
         exempi.free(xmp)
 
-    @unittest.skipIf(_CYGWIN, 'Cygwin issue')
     def test_xmp_files(self):
         """Corresponds to test_xmp_files.cpp"""
         filename = pkg_resources.resource_filename(__name__,
@@ -508,7 +504,6 @@ class TestExempi(unittest.TestCase):
             prop, _ = exempi.get_property(xmp2, NS_PHOTOSHOP, "ICCProfile")
             self.assertEqual(prop, "foo")
 
-    @unittest.skipIf(_CYGWIN, 'Cygwin issue')
     def test_xmp_pdf(self):
         """
         PDF is problematic
@@ -550,7 +545,6 @@ class TestExempi(unittest.TestCase):
             self.assertEqual(prop, "Adobe InDesign CS2 (4.0)")
             exempi.files_free(xfptr)
 
-    @unittest.skipIf(_CYGWIN, 'Cygwin issue')
     def test_formats(self):
         """Verify that check_file_format function works as expected."""
         pairs = {
