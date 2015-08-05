@@ -60,6 +60,7 @@ from libxmp.consts import XMP_FT_TEXT
 from libxmp.consts import XMP_FT_PDF
 from libxmp.consts import XMP_FT_ILLUSTRATOR
 from libxmp.consts import XMP_FT_XML
+from libxmp.consts import XMP_FT_TEXT
 from .common_fixtures import setup_sample_files
 from .samples import open_flags
 
@@ -163,6 +164,7 @@ class XMPFilesTestCase(unittest.TestCase):
 
     def test_open_use_smarthandler(self):
         """Verify library failure."""
+        # No smart handler for these formats.
         # Issue 5
         lst = ['BlueSquare.pdf', 'BlueSquare.ai', 'BlueSquare.xmp']
 
@@ -305,27 +307,43 @@ class XMPFilesTestCase(unittest.TestCase):
 
             self.assertEqual(prop, blurb * 10)
 
-    def test_update_pdf(self):
-        """Verify that we can update existing XMP in a PDF"""
+    def test_update_files(self):
+        """Verify that we can update existing XMP in supported formats"""
         # See issue 40
-        srcfile = pkg.resource_filename(__name__, "samples/BlueSquare.pdf")
-        with tempfile.NamedTemporaryFile(suffix='.pdf') as tfile:
+        for srcfile, format in zip(self.samplefiles, self.formats):
+            if 'BlueSquare' not in srcfile:
+                continue
+            with tempfile.NamedTemporaryFile() as tfile:
+                shutil.copyfile(srcfile, tfile.name)
+
+                xmpf = XMPFiles()
+                xmpf.open_file(tfile.name, open_forupdate=True)
+                xmp = xmpf.get_xmp()
+                xmp.set_property(NS_PHOTOSHOP, "ICCProfile", "foo")
+                xmpf.put_xmp(xmp)
+                xmpf.close_file()
+
+                xmpf.open_file(tfile.name)
+                xmp = xmpf.get_xmp()
+                prop = xmp.get_property(NS_PHOTOSHOP, "ICCProfile")
+                xmpf.close_file()
+
+                self.assertEqual(prop, "foo")
+
+    def test_write_xmp_to_barren_pdf(self):
+        """Verify that we can write XMP to supported formats"""
+        # See issue 40
+        srcfile = pkg.resource_filename(__name__, "fixtures/zeros.pdf")
+
+        with tempfile.NamedTemporaryFile() as tfile:
             shutil.copyfile(srcfile, tfile.name)
 
             xmpf = XMPFiles()
-            xmpf.open_file(tfile.name, open_forupdate=True)
-            xmp = xmpf.get_xmp()
+            xmp = XMPMeta()
             xmp.set_property(NS_PHOTOSHOP, "ICCProfile", "foo")
-            xmpf.put_xmp(xmp)
+            with self.assertRaises(XMPError):
+                xmpf.put_xmp(xmp)
             xmpf.close_file()
-
-            xmpf.open_file(tfile.name)
-            xmp = xmpf.get_xmp()
-            prop = xmp.get_property(NS_PHOTOSHOP, "ICCProfile")
-            xmpf.close_file()
-
-            self.assertEqual(prop, "foo")
-
 
 def suite():
     the_suite = unittest.TestSuite()

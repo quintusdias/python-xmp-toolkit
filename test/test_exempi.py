@@ -454,20 +454,14 @@ class TestExempi(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix=".pdf") as tfile:
             shutil.copyfile(filename, tfile.name)
 
-            flags = XMP_OPEN_FORUPDATE | XMP_OPEN_USEPACKETSCANNING
-            flags = XMP_OPEN_FORUPDATE | XMP_OPEN_STRICTLY
-            xfptr = exempi.files_open_new(tfile.name, flags)
+            xfptr = exempi.files_open_new(tfile.name, XMP_OPEN_FORUPDATE)
             xmp = exempi.new_empty()
 
             exempi.set_property(xmp, NS_DC, "Creator", "moi", 0)
-            exempi.files_put_xmp(xfptr, xmp)
+            with self.assertRaises(libxmp.XMPError):
+                exempi.files_put_xmp(xfptr, xmp)
             exempi.files_close(xfptr, XMP_CLOSE_SAFEUPDATE)
             exempi.files_free(xfptr)
-
-            xfptr2 = exempi.files_open_new(tfile.name, XMP_OPEN_READ)
-            xmp2 = exempi.files_get_new_xmp(xfptr2)
-            prop, _ = exempi.get_property(xmp2, NS_DC, "Creator")
-            self.assertEqual(prop, "moi")
 
     def test_xmp_update_png(self):
         """
