@@ -6,7 +6,6 @@ Test suites for exempi routine wrappers.
 import datetime
 import os
 import pkg_resources
-import platform
 import shutil
 import sys
 import tempfile
@@ -30,7 +29,6 @@ from libxmp.consts import XMP_NS_CameraRaw as NS_CAMERA_RAW_SETTINGS
 from libxmp.consts import XMP_ITERATOR_OPTIONS, XMP_SERIAL_OPTIONS
 from libxmp.consts import XMP_SKIP_OPTIONS
 from libxmp.consts import XMP_CLOSE_SAFEUPDATE, XMP_CLOSE_NOOPTION
-from libxmp.consts import XMP_OPEN_USEPACKETSCANNING, XMP_OPEN_STRICTLY
 from libxmp.consts import XMP_OPEN_READ, XMP_OPEN_FORUPDATE
 from libxmp.consts import XMP_PROP_HAS_QUALIFIERS, XMP_PROP_IS_QUALIFIER
 from libxmp.consts import XMP_PROP_COMPOSITE_MASK
@@ -520,9 +518,9 @@ class TestExempi(unittest.TestCase):
             # Should be XMP_FT_PDF, but libexempi gets this wrong.
             self.assertEqual(fmt, libxmp.consts.XMP_FT_UNKNOWN)
 
-            file_path, opts, file_format, flags = exempi.files_get_file_info(xfptr)
+            path, opts, act_fmt, flags = exempi.files_get_file_info(xfptr)
             self.assertEqual(opts, XMP_OPEN_READ)
-            self.assertEqual(file_format, libxmp.consts.XMP_FT_UNKNOWN)
+            self.assertEqual(act_fmt, libxmp.consts.XMP_FT_UNKNOWN)
 
             # The flags are significantly different for PDF than JPG.  Missing
             # each of the following
@@ -538,7 +536,7 @@ class TestExempi(unittest.TestCase):
                               | consts.XMP_FMT_ALLOW_SAFE_UPDATE)
             self.assertEqual(flags, expected_flags)
 
-            self.assertEqual(filename, file_path)
+            self.assertEqual(filename, path)
 
             xmp = exempi.files_get_xmp(xfptr)
             prop, _ = exempi.get_property(xmp, NS_XAP, "CreatorTool")

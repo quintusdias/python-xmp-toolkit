@@ -339,6 +339,7 @@ class XMPFilesTestCase(unittest.TestCase):
             shutil.copyfile(srcfile, tfile.name)
 
             xmpf = XMPFiles()
+            xmpf.open_file(file_path=tfile.name)
             xmp = XMPMeta()
             xmp.set_property(NS_PHOTOSHOP, "ICCProfile", "foo")
             with self.assertRaises(XMPError):

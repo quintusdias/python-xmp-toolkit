@@ -46,6 +46,7 @@ from .consts import options_mask
 from .consts import XMP_CLOSE_NOOPTION
 from .consts import XMP_OPEN_OPTIONS
 from .consts import XMP_OPEN_NOOPTION
+from .consts import XMP_FMT_CAN_INJECT_XMP
 from . import exempi as _cexempi
 
 __all__ = ['XMPFiles']
@@ -151,6 +152,18 @@ class XMPFiles(object):
         :param xmp_obj: An :class:`libxmp.core.XMPMeta` object
         """
         xmpptr = xmp_obj.xmpptr
+
+        if not _cexempi.files_can_put_xmp(self.xmpfileptr, xmpptr):
+            # If it's PDF, then we can provide a better error message than
+            # what the library provides.
+            _, opts, fmt, flags = _cexempi.files_get_file_info(self.xmpfileptr)
+            with open(self._file_path, 'rb') as fptr:
+                signature = fptr.read(4)
+            if signature == b'%PDF' and not flags & XMP_FMT_CAN_INJECT_XMP:
+                msg = ("Cannot write to a PDF file without a pre-existing "
+                       "XMP packet.")
+                raise XMPError(msg)
+
         _cexempi.files_put_xmp(self.xmpfileptr, xmpptr)
 
     def can_put_xmp(self, xmp_obj):
