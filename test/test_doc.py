@@ -32,28 +32,18 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+import doctest
+import sys
+import unittest
 
-import ctypes
-import ctypes.util
-from ctypes.util import find_library
-import os
 
-class ExempiLoadError(Exception):
-    """ Error signaling that the Exempi library cannot be loaded. """
-    pass
+def load_tests(loader, tests, ignore):
+    """
+    The BOM is problematic to handle under both python2 and python3, so just
+    run doc tests on python3.
+    """
+    if sys.hexversion < 0x03000000:
+        return unittest.TestSuite()
 
-class XMPError(Exception):
-    """ General XMP Error. """
-    pass
-
-# Import classes into global namespace
-from .core import XMPMeta, XMPIterator
-from . import files, core, version, examples
-from .files import XMPFiles
-__version__ = version.VERSION
-
-__all__ = ['XMPMeta', 'XMPFiles', 'XMPError', 'ExempiLoadError', 'files',
-           'core']
-
-from . import exempi
-exempi.init()
+    tests.addTests(doctest.DocTestSuite('libxmp.core'))
+    return tests

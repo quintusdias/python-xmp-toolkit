@@ -168,9 +168,6 @@ class XMPMeta(object):
         """ Checks if two XMPMeta object are not equal. """
         return self.xmpptr != other.xmpptr
 
-    # -------------------------------------
-    # Functions for getting property values
-    # -------------------------------------
     def get_property(self, schema_ns, prop_name):
         """Retrieves property value.
 
@@ -191,6 +188,15 @@ class XMPMeta(object):
 
         .. todo:: Make get_property optionally return keywords describing
             property's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_IPTCCore as NS_IPTC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property(NS_IPTC, "Location")
+        'Parliament Hill, Ottawa, Ontario, Canada'
         """
         value, _ = _cexempi.get_property(self.xmpptr, schema_ns, prop_name)
         return value
@@ -214,15 +220,27 @@ class XMPMeta(object):
 
         .. todo:: Make get_array_item optionally return keywords describing
             array item's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_array_item(NS_DC, "subject", 1)
+        'night'
+        >>> xmp.get_array_item(NS_DC, "subject", 2)
+        'ontario'
+        >>> xmp.get_array_item(NS_DC, "subject", 3)
+        'ottawa'
+        >>> xmp.get_array_item(NS_DC, "subject", 4)
+        'parliament of canada'
         """
         prop, _ = _cexempi.get_array_item(self.xmpptr, schema_ns,
                                           array_prop_name, index)
         return prop
 
 
-    # -------------------------------------
-    # Functions for setting property values
-    # -------------------------------------
     def set_property(self, schema_ns, prop_name, prop_value, **kwargs ):
         """Creates or sets a property value.
 
@@ -242,6 +260,24 @@ class XMPMeta(object):
             must much an already existing option from consts.XMP_PROP_OPTIONS
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.set_property(NS_DC, 'CreatorTool', 'python-xmp-toolkit')
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:CreatorTool>python-xmp-toolkit</dc:CreatorTool>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_property(self.xmpptr, schema_ns, prop_name, prop_value,
@@ -272,6 +308,32 @@ class XMPMeta(object):
             existing array type.
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> opts = {'prop_value_is_array': True, 'prop_value_is_ordered': True}
+        >>> xmp.append_array_item(NS_DC, 'Creator', 'Alan Smithee', array_options=opts)
+        >>> xmp.set_array_item(NS_DC, 'Creator', 2, 'Cordwainer Bird')
+        >>> xmp.set_array_item(NS_DC, 'Creator', 1, 'Allen Smithee')
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:Creator>
+            <rdf:Bag>
+             <rdf:li>Allen Smithee</rdf:li>
+             <rdf:li>Cordwainer Bird</rdf:li>
+            </rdf:Bag>
+           </dc:Creator>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_array_item(self.xmpptr, schema_ns, array_name, item_index,
@@ -298,6 +360,31 @@ class XMPMeta(object):
             XMP_PROP_OPTIONS describing the array type to create.
         :param **kwargs:        Optional keyword arguments describing the item
             type to create.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> opts = {'prop_value_is_array': True, 'prop_value_is_ordered': True}
+        >>> xmp.append_array_item(NS_DC, 'Creator', 'Alan Smithee', array_options=opts)
+        >>> xmp.append_array_item(NS_DC, 'Creator', 'Cordwainer Bird')
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:Creator>
+            <rdf:Bag>
+             <rdf:li>Alan Smithee</rdf:li>
+             <rdf:li>Cordwainer Bird</rdf:li>
+            </rdf:Bag>
+           </dc:Creator>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         if array_options is not None:
             array_options = options_mask(XMP_PROP_OPTIONS, **array_options)
@@ -308,9 +395,6 @@ class XMPMeta(object):
                                    array_options, item_value, options)
 
 
-    # -----------------------------------------------
-    # Functions accessing properties as binary values
-    # -----------------------------------------------
     def get_property_bool(self, schema, name):
         """Retrieve a boolean property.
 
@@ -326,6 +410,15 @@ class XMPMeta(object):
 
         .. todo:: Make get_property_bool optionally return keywords describing
             property's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_CameraRaw as NS_CRS
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property_bool(NS_CRS, "AlreadyApplied")
+        False
         """
         value, _ = _cexempi.get_property_bool(self.xmpptr, schema, name)
         return value
@@ -346,6 +439,15 @@ class XMPMeta(object):
 
         .. todo:: Make get_property_int optionally return keywords describing
             property's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_CameraRaw as NS_CRS
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property_int(NS_CRS, "Saturation")
+        0
         """
         value, _ = _cexempi.get_property_int32(self.xmpptr, schema_ns, name)
         return value
@@ -365,6 +467,15 @@ class XMPMeta(object):
 
         .. todo:: Make get_property_int optionally return keywords describing
             property's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_CameraRaw as NS_CRS
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property_long(NS_CRS, "Saturation")
+        0
         """
         value, _ = _cexempi.get_property_int64(self.xmpptr,
                                                schema_ns, prop_name)
@@ -386,6 +497,15 @@ class XMPMeta(object):
 
         .. todo:: Make get_property_float optionally return keywords describing
             property's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_CameraRaw as NS_CRS
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property_float(NS_CRS, "Exposure")
+        0.0
         """
         val, _ = _cexempi.get_property_float(self.xmpptr, schema_ns, prop_name)
         return val
@@ -403,6 +523,15 @@ class XMPMeta(object):
         :returns: datetime.datetime instance.
 
         :raises: IOError if operation fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_EXIF as NS_EXIF
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property_datetime(NS_EXIF, "DateTimeDigitized")
+        datetime.datetime(2006, 12, 7, 18, 20, 43, tzinfo=<UTC>)
         """
         prop, _ = _cexempi.get_property_date(self.xmpptr, schema_ns, prop_name)
         return prop
@@ -425,6 +554,15 @@ class XMPMeta(object):
         :raises: IOError if operation fails.
 
         :return: The property's value.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_localized_text(NS_DC, 'rights', None, 'x-default')
+        '2006, Hubert Figuiere'
         """
         value, _, _ = _cexempi.get_localized_text(self.xmpptr, schema_ns,
                                                   alt_text_name, generic_lang,
@@ -444,6 +582,24 @@ class XMPMeta(object):
             must much an already existing option from consts.XMP_PROP_OPTIONS
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_XMP_Rights as NS_RIGHTS
+        >>> xmp = XMPMeta()
+        >>> xmp.set_property_bool(NS_RIGHTS, 'Marked', False)
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/">
+           <xmpRights:Marked>False</xmpRights:Marked>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_property_bool(self.xmpptr, schema_ns, prop_name,
@@ -461,6 +617,24 @@ class XMPMeta(object):
             must much an already existing option from consts.XMP_PROP_OPTIONS
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_EXIF as NS_EXIF
+        >>> xmp = XMPMeta()
+        >>> xmp.set_property_int(NS_EXIF, "LightSource", 1)
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:exif="http://ns.adobe.com/exif/1.0/">
+           <exif:LightSource>1</exif:LightSource>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_property_int32(self.xmpptr, schema_ns, prop_name,
@@ -495,6 +669,24 @@ class XMPMeta(object):
             must much an already existing option from consts.XMP_PROP_OPTIONS
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_CameraRaw as NS_CRS
+        >>> xmp = XMPMeta()
+        >>> xmp.set_property_float(NS_CRS, "Exposure", -4.0)
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/">
+           <crs:Exposure>-4.000000</crs:Exposure>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_property_float(self.xmpptr, schema_ns, prop_name,
@@ -511,6 +703,26 @@ class XMPMeta(object):
         :param datetime.datetime prop_value: The new datetime value.
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> import datetime
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_XMP as NS_XMP
+        >>> xmp = XMPMeta()
+        >>> dt = datetime.datetime(2000, 1, 1, 0, 0, 0)
+        >>> xmp.set_property_datetime(NS_XMP, 'CreateDate', dt)
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+           <xmp:CreateDate>2000-01-01</xmp:CreateDate>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_property_date(self.xmpptr, schema_ns, prop_name,
@@ -537,6 +749,33 @@ class XMPMeta(object):
             consts.XMP_PROP_OPTIONS
 
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> title = 'XMP - Extensible Metadata Platform'
+        >>> xmp.set_localized_text(NS_DC, 'title', '', 'en-US', title)
+        >>> title = u'XMP - Une Platforme Extensible pour les Métadonnées'
+        >>> xmp.set_localized_text(NS_DC, 'title', '', 'fr', title) 
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:title>
+            <rdf:Alt>
+             <rdf:li xml:lang="x-default">XMP - Extensible Metadata Platform</rdf:li>
+             <rdf:li xml:lang="en-US">XMP - Extensible Metadata Platform</rdf:li>
+             <rdf:li xml:lang="fr">XMP - Une Platforme Extensible pour les Métadonnées</rdf:li>
+            </rdf:Alt>
+           </dc:title>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         options = options_mask(XMP_PROP_OPTIONS, **kwargs) if kwargs else 0
         _cexempi.set_localized_text(self.xmpptr, schema_ns, alt_text_name,
@@ -544,9 +783,6 @@ class XMPMeta(object):
                                     options)
 
 
-    # ------------------------------------------------
-    # Functions for deleting and detecting properties.
-    # ------------------------------------------------
     def delete_localized_text(self, schema_ns, alt_text_name, generic_lang,
                               specific_lang):
         """Remove a localized property.
@@ -562,6 +798,49 @@ class XMPMeta(object):
             3066 tag. Must not be null or the empty string.
 
         :raises: XMPError if operation fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> title = 'XMP - Extensible Metadata Platform'
+        >>> xmp.set_localized_text(NS_DC, 'title', '', 'en-US', title)
+        >>> title = u'XMP - Une Platforme Extensible pour les Métadonnées'
+        >>> xmp.set_localized_text(NS_DC, 'title', '', 'fr', title) 
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:title>
+            <rdf:Alt>
+             <rdf:li xml:lang="x-default">XMP - Extensible Metadata Platform</rdf:li>
+             <rdf:li xml:lang="en-US">XMP - Extensible Metadata Platform</rdf:li>
+             <rdf:li xml:lang="fr">XMP - Une Platforme Extensible pour les Métadonnées</rdf:li>
+            </rdf:Alt>
+           </dc:title>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
+        >>> xmp.delete_localized_text(NS_DC, 'title', 'en', 'en-US')
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:title>
+            <rdf:Alt>
+             <rdf:li xml:lang="fr">XMP - Une Platforme Extensible pour les Métadonnées</rdf:li>
+            </rdf:Alt>
+           </dc:title>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         _cexempi.delete_localized_text(self.xmpptr, schema_ns, alt_text_name,
                                        generic_lang, specific_lang)
@@ -575,6 +854,18 @@ class XMPMeta(object):
 
         :param str schema_ns: The namespace URI; see get_property().
         :param str prop_name: The name of the property; see get_property().
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_XMP as NS_XMP
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        True
+        >>> xmp.delete_property(NS_XMP, "ModifyDate")
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        False
         """
         _cexempi.delete_property(self.xmpptr, schema_ns, prop_name)
 
@@ -585,6 +876,18 @@ class XMPMeta(object):
         :param str prop_name: The name of the property; see get_property().
 
         :returns: True if the property exists, False otherwise.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_XMP as NS_XMP
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        True
+        >>> xmp.delete_property(NS_XMP, "ModifyDate")
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        False
         """
         return _cexempi.has_property(self.xmpptr, schema_ns, prop_name)
 
@@ -598,6 +901,15 @@ class XMPMeta(object):
 
         :return: True if item is in array, False otherwise
         :rtype: bool
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.does_array_item_exist(NS_DC, 'subject', 'ontario')
+        True
         """
         index = 0
         found = False
@@ -635,6 +947,12 @@ class XMPMeta(object):
         :param str input_encoding: Optional - If `xmp_packet_str` is a 8-bit
             string, it will by default be assumed to be UTF-8 encoded.
         :raises: IOError if operation fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
         """
         if sys.hexversion < 0x03000000 and isinstance(xmp_packet_str, str):
             xmp_packet_str = _force_rdf_to_utf8(xmp_packet_str)
@@ -750,7 +1068,21 @@ class XMPMeta(object):
 
     def count_array_items( self, schema_ns, array_name ):
         """
-        count_array_items returns the number of a given array's items
+        Returns the number of a given array's items.
+
+        Parameters:
+        :param str schema_ns: The namespace URI for the array.
+        :param str prop_name: The name of the array.
+        :returns: the number of items in the array.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.count_array_items(NS_DC, 'subject')
+        4
         """
         count = 0
         while True:
@@ -764,9 +1096,6 @@ class XMPMeta(object):
 
         return count
 
-    # -------------------------------------
-    # Namespace Functions
-    # -------------------------------------
     @staticmethod
     def get_prefix_for_namespace(namespace):
         """
@@ -776,6 +1105,15 @@ class XMPMeta(object):
         :param str namespace: the namespace to check.
         :returns: the associated prefix if registered
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> NS_AVM = "http://www.communicatingastronomy.org/avm/1.0/"
+        >>> XMPMeta.register_namespace(NS_AVM, "avm")
+        'avm:'
+        >>> XMPMeta.get_prefix_for_namespace(NS_AVM)
+        'avm:'
         """
         return _cexempi.namespace_prefix(namespace)
 
@@ -786,6 +1124,15 @@ class XMPMeta(object):
         :param str prefix: The prefix to check.
         :returns: The associated namespace if registered.
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> NS_AVM = "http://www.communicatingastronomy.org/avm/1.0/"
+        >>> XMPMeta.register_namespace(NS_AVM, "avm")
+        'avm:'
+        >>> XMPMeta.get_namespace_for_prefix("avm")
+        'http://www.communicatingastronomy.org/avm/1.0/'
         """
         return _cexempi.prefix_namespace_uri(prefix)
 
@@ -797,6 +1144,13 @@ class XMPMeta(object):
         :param str suggested prefix: the suggested prefix: note that is NOT
             guaranteed it'll be the actual namespace's prefix
         :returns: the actual registered prefix for the namespace
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> NS_AVM = "http://www.communicatingastronomy.org/avm/1.0/"
+        >>> XMPMeta.register_namespace(NS_AVM, "avm")
+        'avm:'
         """
         return _cexempi.register_namespace(namespace_uri, suggested_prefix)
 
@@ -814,6 +1168,46 @@ class XMPIterator(object):
     :param str prop_name: Optional property name to restrict the iteration.
     :param **kwargs:      Optional keyword arguments from XMP_ITERATOR_OPTIONS
     :returns: an iterator for the given xmp_obj
+
+    Examples
+    --------
+    >>> from libxmp import XMPMeta, XMPIterator, examples
+    >>> from libxmp.consts import XMP_NS_EXIF_Aux as NS_EXIF_AUX
+    >>> import pprint
+    >>> xmp = XMPMeta()
+    >>> xmp.parse_from_str(examples.test1)
+    >>> it = XMPIterator(xmp)
+    >>> lst = []
+    >>> for namespace, property, value, options in it:
+    ...     if namespace == NS_EXIF_AUX:
+    ...         lst.append((property, value))
+    ...
+    >>> pprint.pprint(lst, width=50)
+    [('', ''),
+     ('aux:SerialNumber', '420103070'),
+     ('aux:LensInfo', '24/1 85/1 0/0 0/0'),
+     ('aux:Lens', '24.0-85.0 mm'),
+     ('aux:ImageNumber', '176'),
+     ('aux:FlashCompensation', '-2/1'),
+     ('aux:OwnerName', 'unknown'),
+     ('aux:Firmware', '1.1.0')]
+
+    >>> xmp = XMPMeta()
+    >>> xmp.parse_from_str(examples.test1)
+    >>> it = XMPIterator(xmp, schema_ns=NS_EXIF_AUX)
+    >>> lst = []
+    >>> for namespace, property, value, options in it:
+    ...     lst.append((property, value))
+    ...
+    >>> pprint.pprint(lst, width=50)
+    [('', ''),
+     ('aux:SerialNumber', '420103070'),
+     ('aux:LensInfo', '24/1 85/1 0/0 0/0'),
+     ('aux:Lens', '24.0-85.0 mm'),
+     ('aux:ImageNumber', '176'),
+     ('aux:FlashCompensation', '-2/1'),
+     ('aux:OwnerName', 'unknown'),
+     ('aux:Firmware', '1.1.0')]
     """
     def __init__( self, xmp_obj, schema_ns=None, prop_name=None, **kwargs ):
         if kwargs:
