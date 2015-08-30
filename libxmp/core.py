@@ -168,9 +168,6 @@ class XMPMeta(object):
         """ Checks if two XMPMeta object are not equal. """
         return self.xmpptr != other.xmpptr
 
-    # -------------------------------------
-    # Functions for getting property values
-    # -------------------------------------
     def get_property(self, schema_ns, prop_name):
         """Retrieves property value.
 
@@ -223,6 +220,21 @@ class XMPMeta(object):
 
         .. todo:: Make get_array_item optionally return keywords describing
             array item's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_array_item(NS_DC, "subject", 1)
+        'night'
+        >>> xmp.get_array_item(NS_DC, "subject", 2)
+        'ontario'
+        >>> xmp.get_array_item(NS_DC, "subject", 3)
+        'ottawa'
+        >>> xmp.get_array_item(NS_DC, "subject", 4)
+        'parliament of canada'
         """
         prop, _ = _cexempi.get_array_item(self.xmpptr, schema_ns,
                                           array_prop_name, index)
