@@ -32,28 +32,10 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
+import doctest
 
-import ctypes
-import ctypes.util
-from ctypes.util import find_library
-import os
 
-class ExempiLoadError(Exception):
-    """ Error signaling that the Exempi library cannot be loaded. """
-    pass
-
-class XMPError(Exception):
-    """ General XMP Error. """
-    pass
-
-# Import classes into global namespace
-from .core import XMPMeta, XMPIterator
-from . import files, core, version, examples
-from .files import XMPFiles
-__version__ = version.VERSION
-
-__all__ = ['XMPMeta', 'XMPFiles', 'XMPError', 'ExempiLoadError', 'files',
-           'core']
-
-from . import exempi
-exempi.init()
+def load_tests(loader, tests, ignore):
+    """Should run doc tests as well"""
+    tests.addTests(doctest.DocTestSuite('libxmp.core'))
+    return tests

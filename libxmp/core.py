@@ -191,6 +191,15 @@ class XMPMeta(object):
 
         .. todo:: Make get_property optionally return keywords describing
             property's options
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_IPTCCore as NS_IPTC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.get_property(NS_IPTC, "Location")
+        'Parliament Hill, Ottawa, Ontario, Canada'
         """
         value, _ = _cexempi.get_property(self.xmpptr, schema_ns, prop_name)
         return value
