@@ -783,9 +783,6 @@ class XMPMeta(object):
                                     options)
 
 
-    # ------------------------------------------------
-    # Functions for deleting and detecting properties.
-    # ------------------------------------------------
     def delete_localized_text(self, schema_ns, alt_text_name, generic_lang,
                               specific_lang):
         """Remove a localized property.
@@ -801,6 +798,49 @@ class XMPMeta(object):
             3066 tag. Must not be null or the empty string.
 
         :raises: XMPError if operation fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> title = 'XMP - Extensible Metadata Platform'
+        >>> xmp.set_localized_text(NS_DC, 'title', '', 'en-US', title)
+        >>> title = u'XMP - Une Platforme Extensible pour les Métadonnées'
+        >>> xmp.set_localized_text(NS_DC, 'title', '', 'fr', title) 
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:title>
+            <rdf:Alt>
+             <rdf:li xml:lang="x-default">XMP - Extensible Metadata Platform</rdf:li>
+             <rdf:li xml:lang="en-US">XMP - Extensible Metadata Platform</rdf:li>
+             <rdf:li xml:lang="fr">XMP - Une Platforme Extensible pour les Métadonnées</rdf:li>
+            </rdf:Alt>
+           </dc:title>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
+        >>> xmp.delete_localized_text(NS_DC, 'title', 'en', 'en-US')
+        >>> print(xmp)
+        <?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+        <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Exempi + XMP Core 5.1.2">
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about=""
+            xmlns:dc="http://purl.org/dc/elements/1.1/">
+           <dc:title>
+            <rdf:Alt>
+             <rdf:li xml:lang="fr">XMP - Une Platforme Extensible pour les Métadonnées</rdf:li>
+            </rdf:Alt>
+           </dc:title>
+          </rdf:Description>
+         </rdf:RDF>
+        </x:xmpmeta>
+        <?xpacket end="w"?>
         """
         _cexempi.delete_localized_text(self.xmpptr, schema_ns, alt_text_name,
                                        generic_lang, specific_lang)
