@@ -1043,9 +1043,6 @@ class XMPMeta(object):
 
         return count
 
-    # -------------------------------------
-    # Namespace Functions
-    # -------------------------------------
     @staticmethod
     def get_prefix_for_namespace(namespace):
         """
@@ -1055,6 +1052,13 @@ class XMPMeta(object):
         :param str namespace: the namespace to check.
         :returns: the associated prefix if registered
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_CC as NS_CC
+        >>> XMPMeta.get_prefix_for_namespace(NS_CC)
+        'cc:'
         """
         return _cexempi.namespace_prefix(namespace)
 
@@ -1065,6 +1069,15 @@ class XMPMeta(object):
         :param str prefix: The prefix to check.
         :returns: The associated namespace if registered.
         :raises: IOError if exempi library routine fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_CC as NS_CC
+        >>> XMPMeta.register_namespace(NS_CC, "cc")
+        'cc:'
+        >>> XMPMeta.get_namespace_for_prefix("cc")
+        'http://creativecommons.org/ns#'
         """
         return _cexempi.prefix_namespace_uri(prefix)
 
@@ -1081,7 +1094,6 @@ class XMPMeta(object):
         --------
         >>> from libxmp import XMPMeta
         >>> from libxmp.consts import XMP_NS_CC as NS_CC
-        >>> xmp = XMPMeta()
         >>> XMPMeta.register_namespace(NS_CC, "cc")
         'cc:'
         """
