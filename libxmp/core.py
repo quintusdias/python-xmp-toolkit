@@ -1076,6 +1076,14 @@ class XMPMeta(object):
         :param str suggested prefix: the suggested prefix: note that is NOT
             guaranteed it'll be the actual namespace's prefix
         :returns: the actual registered prefix for the namespace
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta
+        >>> from libxmp.consts import XMP_NS_CC as NS_CC
+        >>> xmp = XMPMeta()
+        >>> XMPMeta.register_namespace(NS_CC, "cc")
+        'cc:'
         """
         return _cexempi.register_namespace(namespace_uri, suggested_prefix)
 
