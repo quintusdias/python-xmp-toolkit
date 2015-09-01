@@ -854,6 +854,18 @@ class XMPMeta(object):
 
         :param str schema_ns: The namespace URI; see get_property().
         :param str prop_name: The name of the property; see get_property().
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_XMP as NS_XMP
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        True
+        >>> xmp.delete_property(NS_XMP, "ModifyDate")
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        False
         """
         _cexempi.delete_property(self.xmpptr, schema_ns, prop_name)
 
@@ -864,6 +876,18 @@ class XMPMeta(object):
         :param str prop_name: The name of the property; see get_property().
 
         :returns: True if the property exists, False otherwise.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_XMP as NS_XMP
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        True
+        >>> xmp.delete_property(NS_XMP, "ModifyDate")
+        >>> xmp.does_property_exist(NS_XMP, "ModifyDate")
+        False
         """
         return _cexempi.has_property(self.xmpptr, schema_ns, prop_name)
 
@@ -877,6 +901,15 @@ class XMPMeta(object):
 
         :return: True if item is in array, False otherwise
         :rtype: bool
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.does_array_item_exist(NS_DC, 'subject', 'ontario')
+        True
         """
         index = 0
         found = False
@@ -914,6 +947,12 @@ class XMPMeta(object):
         :param str input_encoding: Optional - If `xmp_packet_str` is a 8-bit
             string, it will by default be assumed to be UTF-8 encoded.
         :raises: IOError if operation fails.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
         """
         if sys.hexversion < 0x03000000 and isinstance(xmp_packet_str, str):
             xmp_packet_str = _force_rdf_to_utf8(xmp_packet_str)
@@ -1029,7 +1068,21 @@ class XMPMeta(object):
 
     def count_array_items( self, schema_ns, array_name ):
         """
-        count_array_items returns the number of a given array's items
+        Returns the number of a given array's items.
+
+        Parameters:
+        :param str schema_ns: The namespace URI for the array.
+        :param str prop_name: The name of the array.
+        :returns: the number of items in the array.
+
+        Examples
+        --------
+        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> xmp = XMPMeta()
+        >>> xmp.parse_from_str(examples.test1)
+        >>> xmp.count_array_items(NS_DC, 'subject')
+        4
         """
         count = 0
         while True:
