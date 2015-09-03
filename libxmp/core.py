@@ -1166,6 +1166,46 @@ class XMPIterator(object):
     :param str prop_name: Optional property name to restrict the iteration.
     :param **kwargs:      Optional keyword arguments from XMP_ITERATOR_OPTIONS
     :returns: an iterator for the given xmp_obj
+
+    Examples
+    --------
+    >>> from libxmp import XMPMeta, XMPIterator, examples
+    >>> from libxmp.consts import XMP_NS_EXIF_Aux as NS_EXIF_AUX
+    >>> import pprint
+    >>> xmp = XMPMeta()
+    >>> xmp.parse_from_str(examples.test1)
+    >>> it = XMPIterator(xmp)
+    >>> lst = []
+    >>> for namespace, property, value, options in it:
+    ...     if ns == NS_EXIF_AUX:
+    ...         lst.append((prop, value))
+    ...
+    >>> pprint.pprint(lst, width=50)
+    [('', ''),
+     ('aux:SerialNumber', '420103070'),
+     ('aux:LensInfo', '24/1 85/1 0/0 0/0'),
+     ('aux:Lens', '24.0-85.0 mm'),
+     ('aux:ImageNumber', '176'),
+     ('aux:FlashCompensation', '-2/1'),
+     ('aux:OwnerName', 'unknown'),
+     ('aux:Firmware', '1.1.0')]
+
+    >>> xmp = XMPMeta()
+    >>> xmp.parse_from_str(examples.test1)
+    >>> it = XMPIterator(xmp, schema_ns=NS_EXIF_AUX)
+    >>> lst = []
+    >>> for namespace, property, value, options in it:
+    ...     lst.append((property, value))
+    ...
+    >>> pprint.pprint(lst, width=50)
+    [('', ''),
+     ('aux:SerialNumber', '420103070'),
+     ('aux:LensInfo', '24/1 85/1 0/0 0/0'),
+     ('aux:Lens', '24.0-85.0 mm'),
+     ('aux:ImageNumber', '176'),
+     ('aux:FlashCompensation', '-2/1'),
+     ('aux:OwnerName', 'unknown'),
+     ('aux:Firmware', '1.1.0')]
     """
     def __init__( self, xmp_obj, schema_ns=None, prop_name=None, **kwargs ):
         if kwargs:
