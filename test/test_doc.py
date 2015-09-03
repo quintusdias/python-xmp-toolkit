@@ -33,9 +33,17 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 import doctest
+import sys
+import unittest
 
 
 def load_tests(loader, tests, ignore):
-    """Should run doc tests as well"""
+    """
+    The BOM is problematic to handle under both python2 and python3, so just
+    run doc tests on python3.
+    """
+    if sys.hexversion < 0x03000000:
+        return unittest.TestSuite()
+
     tests.addTests(doctest.DocTestSuite('libxmp.core'))
     return tests
