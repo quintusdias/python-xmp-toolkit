@@ -1177,8 +1177,8 @@ class XMPIterator(object):
     >>> it = XMPIterator(xmp)
     >>> lst = []
     >>> for namespace, property, value, options in it:
-    ...     if ns == NS_EXIF_AUX:
-    ...         lst.append((prop, value))
+    ...     if namespace == NS_EXIF_AUX:
+    ...         lst.append((property, value))
     ...
     >>> pprint.pprint(lst, width=50)
     [('', ''),
