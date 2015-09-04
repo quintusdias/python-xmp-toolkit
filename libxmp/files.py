@@ -69,6 +69,11 @@ class XMPFiles(object):
 
     .. todo::
         Documentation
+
+    Examples
+    --------
+    >>> from libxmp import XMPFiles, examples
+    >>> xf = XMPFiles(file_path=examples.nemo)
     """
     def __init__(self, **kwargs ):
         self._file_path = None
@@ -116,6 +121,12 @@ class XMPFiles(object):
 
         .. todo::
             Change signature into using kwargs to set option flag
+
+        Examples
+        --------
+        >>> from libxmp import XMPFiles, examples
+        >>> xf = XMPFiles()
+        >>> xf.open_file(file_path=examples.nemo)
         """
         if kwargs:
             open_flags = options_mask( XMP_OPEN_OPTIONS, **kwargs )
@@ -138,6 +149,13 @@ class XMPFiles(object):
 
         .. todo::
             Change signature into using kwargs to set option flag
+
+        Examples
+        --------
+        >>> from libxmp import XMPFiles, examples
+        >>> xf = XMPFiles()
+        >>> xf.open_file(file_path=examples.nemo)
+        >>> xf.close_file()
         """
         _cexempi.files_close( self.xmpfileptr, close_flags )
         self._file_path = None
@@ -148,6 +166,14 @@ class XMPFiles(object):
 
         :return: A new :class:`libxmp.core.XMPMeta` instance.
         :raises XMPError: in case of errors.
+
+        Examples
+        --------
+        >>> from libxmp import XMPFiles, examples
+        >>> xf = XMPFiles()
+        >>> xf.open_file(file_path=examples.nemo)
+        >>> xmp = xf.get_xmp()
+        >>> xf.close_file()
         """
         xmpptr = _cexempi.files_get_new_xmp(self.xmpfileptr)
 
@@ -161,6 +187,21 @@ class XMPFiles(object):
         Write XMPMeta object to file. See also :func:`can_put_xmp`.
 
         :param xmp_obj: An :class:`libxmp.core.XMPMeta` object
+
+        Examples
+        --------
+        >>> import shutil
+        >>> from tempfile import NamedTemporaryFile
+        >>> from libxmp import XMPFiles, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> with NamedTemporaryFile(suffix=".jpg") as tfile:
+        ...     xmp_file = shutil.copyfile(examples.nemo, tfile.name)
+        ...     xf = XMPFiles()
+        ...     xf.open_file(file_path=xmp_file, open_forupdate=True)
+        ...     xmp = xf.get_xmp()
+        ...     xmp.set_property(NS_DC, 'CreatorTool', 'python-xmp-toolkit')
+        ...     xf.put_xmp(xmp)
+        ...     xf.close_file()
         """
         xmpptr = xmp_obj.xmpptr
         if not self.can_put_xmp(xmp_obj):
@@ -178,6 +219,19 @@ class XMPFiles(object):
         :param xmp_obj: An :class:`libxmp.core.XMPMeta` object
         :return:  true if :class:`libxmp.core.XMPMeta` object writeable to file.
         :rtype: bool
+
+        Examples
+        --------
+        >>> import shutil
+        >>> from tempfile import NamedTemporaryFile
+        >>> from libxmp import XMPFiles, examples
+        >>> from libxmp.consts import XMP_NS_DC as NS_DC
+        >>> with NamedTemporaryFile(suffix=".jpg") as tfile:
+        ...     xmp_file = shutil.copyfile(examples.nemo, tfile.name)
+        ...     xf = XMPFiles(file_path=xmp_file, open_forupdate=True)
+        ...     xmp = xf.get_xmp()
+        ...     xf.can_put_xmp(xmp)
+        True
         """
         if not isinstance( xmp_obj, XMPMeta ):
             raise XMPError('Not a XMPMeta object')

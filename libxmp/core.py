@@ -191,12 +191,12 @@ class XMPMeta(object):
 
         Examples
         --------
-        >>> from libxmp import XMPMeta, examples
-        >>> from libxmp.consts import XMP_NS_IPTCCore as NS_IPTC
-        >>> xmp = XMPMeta()
-        >>> xmp.parse_from_str(examples.test1)
-        >>> xmp.get_property(NS_IPTC, "Location")
-        'Parliament Hill, Ottawa, Ontario, Canada'
+        >>> from libxmp import XMPFiles, examples
+        >>> from libxmp.consts import XMP_NS_XMP as NS_XMP
+        >>> xf = XMPFiles(file_path=examples.nemo)
+        >>> xmp = xf.get_xmp()
+        >>> xmp.get_property(NS_XMP, "CreatorTool")
+        'Picasa'
         """
         value, _ = _cexempi.get_property(self.xmpptr, schema_ns, prop_name)
         return value
@@ -223,18 +223,18 @@ class XMPMeta(object):
 
         Examples
         --------
-        >>> from libxmp import XMPMeta, examples
-        >>> from libxmp.consts import XMP_NS_DC as NS_DC
-        >>> xmp = XMPMeta()
-        >>> xmp.parse_from_str(examples.test1)
-        >>> xmp.get_array_item(NS_DC, "subject", 1)
-        'night'
-        >>> xmp.get_array_item(NS_DC, "subject", 2)
-        'ontario'
-        >>> xmp.get_array_item(NS_DC, "subject", 3)
-        'ottawa'
-        >>> xmp.get_array_item(NS_DC, "subject", 4)
-        'parliament of canada'
+        >>> from libxmp import XMPFiles, examples
+        >>> from libxmp.consts import XMP_NS_EXIF as NS_EXIF
+        >>> xf = XMPFiles(file_path=examples.nemo)
+        >>> xmp = xf.get_xmp()
+        >>> xmp.get_array_item(NS_EXIF, "ComponentsConfiguration", 1)
+        '1'
+        >>> xmp.get_property(NS_EXIF, "ComponentsConfiguration[2]")
+        '2'
+        >>> xmp.get_property(NS_EXIF, "ComponentsConfiguration[3]")
+        '3'
+        >>> xmp.get_array_item(NS_EXIF, "ComponentsConfiguration", 4)
+        '0'
         """
         prop, _ = _cexempi.get_array_item(self.xmpptr, schema_ns,
                                           array_prop_name, index)
@@ -526,12 +526,12 @@ class XMPMeta(object):
 
         Examples
         --------
-        >>> from libxmp import XMPMeta, examples
+        >>> from libxmp import XMPFiles, examples
         >>> from libxmp.consts import XMP_NS_EXIF as NS_EXIF
-        >>> xmp = XMPMeta()
-        >>> xmp.parse_from_str(examples.test1)
-        >>> xmp.get_property_datetime(NS_EXIF, "DateTimeDigitized")
-        datetime.datetime(2006, 12, 7, 18, 20, 43, tzinfo=<UTC>)
+        >>> xf = XMPFiles(file_path=examples.nemo)
+        >>> xmp = xf.get_xmp()
+        >>> xmp.get_property_datetime(NS_EXIF, "GPSTimeStamp")
+        datetime.datetime(2013, 2, 9, 19, 47, 53, tzinfo=<UTC>)
         """
         prop, _ = _cexempi.get_property_date(self.xmpptr, schema_ns, prop_name)
         return prop

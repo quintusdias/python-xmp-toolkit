@@ -46,4 +46,5 @@ def load_tests(loader, tests, ignore):
         return unittest.TestSuite()
 
     tests.addTests(doctest.DocTestSuite('libxmp.core'))
+    tests.addTests(doctest.DocTestSuite('libxmp.files'))
     return tests
