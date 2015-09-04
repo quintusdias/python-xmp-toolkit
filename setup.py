@@ -62,6 +62,7 @@ KWARGS = {
     'license': 'New BSD License',
     'install_requires': ['pytz'],
     'packages': find_packages(exclude=["*test*"]),
+     'package_data': {'libxmp': ['examples/*.xmp', 'examples/*.jpg']},
     'test_suite': 'test',
     'tests_require': test_requires,
     'classifiers': [
