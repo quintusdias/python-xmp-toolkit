@@ -281,17 +281,38 @@ class XMPFilesTestCase(unittest.TestCase):
         xmp = xmpfile.get_xmp()
         xmpfile.can_put_xmp( xmp )
 
+    def test_write_new_xmp_to_pdf(self):
+        """
+        """
+        # Note, the file should have been opened with "open_forupdate = True"
+        # so let's check if XMPMeta is raising an Exception.
+        xmpfile = XMPFiles()
+        filename = os.path.join(self.tempdir, 'BlueSquare.pdf')
+        xmpfile.open_file(filename, open_forupdate=True)
+        xmp_data = xmpfile.get_xmp()
+        xmp_data.set_property(NS_PHOTOSHOP, 'Headline', 'Some text' * 1000)
+
+        try:
+            xmpfile.put_xmp(xmp_data)
+        except XMPError as e:
+            print(e)
+
     def test_write_in_readonly(self):
-        """If not "open_forupdate = True", should raise exception"""
+        """
+        If not "open_forupdate = True", should raise exception.
+        """
         # Note, the file should have been opened with "open_forupdate = True"
         # so let's check if XMPMeta is raising an Exception.
         xmpfile = XMPFiles()
         filename = os.path.join(self.tempdir, 'sig05-002a.tif')
         xmpfile.open_file(filename)
         xmp_data = xmpfile.get_xmp()
-        xmp_data.set_property( NS_PHOTOSHOP, 'Headline', "Some text")
-        self.assertRaises( XMPError, xmpfile.put_xmp, xmp_data )
-        self.assertEqual( xmpfile.can_put_xmp( xmp_data ), False )
+        xmp_data.set_property(NS_PHOTOSHOP, 'Headline', 'Some text')
+
+        with self.assertRaises(XMPError):
+            xmpfile.put_xmp(xmp_data)
+
+        self.assertFalse(xmpfile.can_put_xmp(xmp_data))
 
     def test_tiff_smarthandler(self):
         """Verify action of TIFF smarthandler when tag length > 255"""

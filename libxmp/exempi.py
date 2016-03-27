@@ -230,6 +230,16 @@ class PacketInfoType(ctypes.Structure):
         ("pad", ctypes.c_uint8),
     ]
 
+    def __str__(self):
+        s = "offset: {offset}\n".format(offset=self.offset)
+        s += "length: {length}\n".format(length=self.length)
+        s += "pad_size: {pad_size}\n".format(pad_size=self.pad_size)
+        s += "char_form: {char_form}\n".format(char_form=self.char_form)
+        s += "writeable: {writeable}\n".format(writeable=self.writeable)
+        s += "has_wrapper: {has_wrapper}\n".format(has_wrapper=self.has_wrapper)
+        s += "pad: {pad}\n".format(pad=self.pad)
+        return s
+
 
 def files_can_put_xmp(xfptr, xmp):
     """Wrapper for xmp_files_can_put_xmp library routine.
@@ -578,9 +588,14 @@ def files_put_xmp(xfptr, xmp):
     ------
     XMPError : if the corresponding library routine fails
     """
-    EXEMPI.xmp_files_put_xmp.restype = check_error
+    EXEMPI.xmp_files_put_xmp.restype = ctypes.c_bool
     EXEMPI.xmp_files_put_xmp.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    EXEMPI.xmp_files_put_xmp(xfptr, xmp)
+    _, packet_info = files_get_xmp_xmpstring(xfptr)
+    if not EXEMPI.xmp_files_put_xmp(xfptr, xmp):
+        ecode = EXEMPI.xmp_get_error()
+        error_msg = ERROR_MESSAGE[ecode]
+        msg = 'Exempi function failure ("{0}").'.format(error_msg)
+        raise XMPError(msg)
 
 
 def get_array_item(xmp, schema, name, index):
