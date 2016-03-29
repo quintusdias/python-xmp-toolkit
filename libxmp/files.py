@@ -144,14 +144,24 @@ class XMPFiles(object):
         else:
             return None
 
-    def put_xmp( self, xmp_obj ):
+    def put_xmp(self, xmp_obj):
         """
         Write XMPMeta object to file. See also :func:`can_put_xmp`.
 
         :param xmp_obj: An :class:`libxmp.core.XMPMeta` object
         """
         xmpptr = xmp_obj.xmpptr
-        _cexempi.files_put_xmp( self.xmpfileptr, xmpptr )
+        if not self.can_put_xmp(xmp_obj):
+            # Are we at least exempi version 2.3?
+            if hasattr(_cexempi, 'files_get_xmp_xmpstring'):
+                _, pi = _cexempi.files_get_xmp_xmpstring(self.xmpfileptr)
+                if pi.length < len(str(xmp_obj)):
+                    msg = ('The length of the existing XMP packet is {elen} '
+                           'but the length of the new packet is {nlen}.  If '
+                           'the file format is PDF, this is not allowed.')
+                    msg = msg.format(elen = pi.length, nlen=len(str(xmp_obj)))
+                    raise XMPError(msg)
+        _cexempi.files_put_xmp(self.xmpfileptr, xmpptr)
 
     def can_put_xmp( self, xmp_obj ):
         """Determine if XMP can be written into the file.

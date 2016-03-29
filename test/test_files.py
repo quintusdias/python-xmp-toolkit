@@ -291,11 +291,7 @@ class XMPFilesTestCase(unittest.TestCase):
         xmpfile.open_file(filename, open_forupdate=True)
         xmp_data = xmpfile.get_xmp()
         xmp_data.set_property(NS_PHOTOSHOP, 'Headline', 'Some text' * 1000)
-
-        try:
-            xmpfile.put_xmp(xmp_data)
-        except XMPError as e:
-            print(e)
+        xmpfile.put_xmp(xmp_data)
 
     def test_write_in_readonly(self):
         """
