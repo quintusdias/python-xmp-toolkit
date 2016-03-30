@@ -590,7 +590,6 @@ def files_put_xmp(xfptr, xmp):
     """
     EXEMPI.xmp_files_put_xmp.restype = ctypes.c_bool
     EXEMPI.xmp_files_put_xmp.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-    _, packet_info = files_get_xmp_xmpstring(xfptr)
     if not EXEMPI.xmp_files_put_xmp(xfptr, xmp):
         ecode = EXEMPI.xmp_get_error()
         error_msg = ERROR_MESSAGE[ecode]

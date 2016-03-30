@@ -283,15 +283,60 @@ class XMPFilesTestCase(unittest.TestCase):
 
     def test_write_new_xmp_to_pdf(self):
         """
+        Write back to PDF, fitting into padding
+
+        PDF files are trick for writing back.  This test case comes just within
+        just 2 characters of using all the padding.
+
+        The original packet has the following properties:
+
+            offset: 1472
+            length: 8889
+            pad_size: 2049
+            char_form: 0
+            writeable: True
+            has_wrapper: True
+            pad: 0
+
+        After writing, the packet has the following properties:
+
+            offset: -1
+            length: 8889
+            pad_size: 2
+            char_form: 0
+            writeable: True
+            has_wrapper: True
+            pad: 0
+
+        It appears that the packet is reformatted a bit because far more than
+        2047 characters in the padding are consumed.
         """
-        # Note, the file should have been opened with "open_forupdate = True"
-        # so let's check if XMPMeta is raising an Exception.
         xmpfile = XMPFiles()
         filename = os.path.join(self.tempdir, 'BlueSquare.pdf')
         xmpfile.open_file(filename, open_forupdate=True)
         xmp_data = xmpfile.get_xmp()
-        xmp_data.set_property(NS_PHOTOSHOP, 'Headline', 'Some text' * 1000)
+
+        # 2763 extra characters.
+        xmp_data.set_property(NS_PHOTOSHOP, 'Headline', 'Some text' * 307)
         xmpfile.put_xmp(xmp_data)
+        xmpfile.close_file()
+
+        xmpfile.open_file(filename)
+        xmp_data = xmpfile.get_xmp()
+        expected = xmp_data.get_property(NS_PHOTOSHOP, 'Headline')
+        self.assertEqual(expected, 'Some text' * 307)
+
+    def test_write_too_much_xmp_back_to_pdf(self):
+        """Write back to PDF, exceeding the allowed packet size"""
+        xmpfile = XMPFiles()
+        filename = os.path.join(self.tempdir, 'BlueSquare.pdf')
+        xmpfile.open_file(filename, open_forupdate=True)
+        xmp_data = xmpfile.get_xmp()
+
+        # 2763 extra characters.
+        xmp_data.set_property(NS_PHOTOSHOP, 'Headline', 'Some text' * 308)
+        with self.assertRaises(XMPError):
+            xmpfile.put_xmp(xmp_data)
 
     def test_write_in_readonly(self):
         """

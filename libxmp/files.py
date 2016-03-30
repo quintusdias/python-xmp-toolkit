@@ -42,10 +42,9 @@ fallback packet scanner that can be used for unknown file formats.
 """
 
 from . import XMPError, XMPMeta
+from . import consts
 from .consts import options_mask
-from .consts import XMP_CLOSE_NOOPTION
-from .consts import XMP_OPEN_OPTIONS
-from .consts import XMP_OPEN_NOOPTION
+from .consts import XMP_CLOSE_NOOPTION, XMP_OPEN_OPTIONS, XMP_OPEN_NOOPTION
 from . import exempi as _cexempi
 
 __all__ = ['XMPFiles']
@@ -78,7 +77,6 @@ class XMPFiles(object):
 
             self.open_file( file_path, **kwargs )
 
-
     def __repr__(self):
         msg = "XMPFiles("
         if self._file_path is None:
@@ -87,14 +85,14 @@ class XMPFiles(object):
             msg += "file_path='{0}')"
             msg = msg.format(self._file_path)
         return msg
+
     def __del__(self):
         """
         Free up the memory associated with the XMP file instance.
         """
-        _cexempi.files_free( self.xmpfileptr )
+        _cexempi.files_free(self.xmpfileptr)
 
-
-    def open_file(self, file_path, **kwargs ):
+    def open_file(self, file_path, **kwargs):
         """
         Open a given file and read XMP from file. File must be closed again with
         :func:`close_file`
@@ -113,8 +111,16 @@ class XMPFiles(object):
         if self._file_path != None:
             raise XMPError('A file is already open - close it first.')
 
-        _cexempi.files_open( self.xmpfileptr, file_path, open_flags )
+        _cexempi.files_open(self.xmpfileptr, file_path, open_flags)
         self._file_path = file_path
+
+        self._file_format = _cexempi.files_get_file_info(self.xmpfileptr)[2]
+        if self._file_format == consts.XMP_FT_UNKNOWN:
+            # Is it PDF?
+            with open(self._file_path, mode='rb') as f:
+                buffer = f.read(4)
+                if buffer == b'%PDF':
+                    self._file_format = consts.XMP_FT_PDF
 
     def close_file( self, close_flags=XMP_CLOSE_NOOPTION):
         """
@@ -130,7 +136,7 @@ class XMPFiles(object):
         _cexempi.files_close( self.xmpfileptr, close_flags )
         self._file_path = None
 
-    def get_xmp( self ):
+    def get_xmp(self):
         """
         Get XMP from file.
 
@@ -153,17 +159,19 @@ class XMPFiles(object):
         xmpptr = xmp_obj.xmpptr
         if not self.can_put_xmp(xmp_obj):
             # Are we at least exempi version 2.3?
-            if hasattr(_cexempi, 'files_get_xmp_xmpstring'):
+            if not _cexempi._libexempi_version.startswith('2.2') and self._file_format == consts.XMP_FT_PDF:
                 _, pi = _cexempi.files_get_xmp_xmpstring(self.xmpfileptr)
                 if pi.length < len(str(xmp_obj)):
                     msg = ('The length of the existing XMP packet is {elen} '
-                           'but the length of the new packet is {nlen}.  If '
-                           'the file format is PDF, this is not allowed.')
+                           'but the length of the new packet is {nlen}.  '
+                           'Currently with PDF files, the new packet must be '
+                           'less than or equal to {elen}. ')
                     msg = msg.format(elen = pi.length, nlen=len(str(xmp_obj)))
                     raise XMPError(msg)
+        _, pi = _cexempi.files_get_xmp_xmpstring(self.xmpfileptr)
         _cexempi.files_put_xmp(self.xmpfileptr, xmpptr)
 
-    def can_put_xmp( self, xmp_obj ):
+    def can_put_xmp(self, xmp_obj):
         """Determine if XMP can be written into the file.
 
         Determines if a given :class:`libxmp.core.XMPMeta` object can be
