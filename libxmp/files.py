@@ -159,14 +159,15 @@ class XMPFiles(object):
         xmpptr = xmp_obj.xmpptr
         if not self.can_put_xmp(xmp_obj):
             # Are we at least exempi version 2.3?
-            if not _cexempi._libexempi_version.startswith('2.2') and self._file_format == consts.XMP_FT_PDF:
+            if (((not _cexempi._libexempi_version.startswith('2.2')) and
+                 (self._file_format == consts.XMP_FT_PDF))):
                 _, pi = _cexempi.files_get_xmp_xmpstring(self.xmpfileptr)
                 if pi.length < len(str(xmp_obj)):
                     msg = ('The length of the existing XMP packet is {elen} '
                            'but the length of the new packet is {nlen}.  '
                            'Currently with PDF files, the new packet must be '
                            'less than or equal to {elen}. ')
-                    msg = msg.format(elen = pi.length, nlen=len(str(xmp_obj)))
+                    msg = msg.format(elen=pi.length, nlen=len(str(xmp_obj)))
                     raise XMPError(msg)
         _cexempi.files_put_xmp(self.xmpfileptr, xmpptr)
 
