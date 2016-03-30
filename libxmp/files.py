@@ -168,7 +168,6 @@ class XMPFiles(object):
                            'less than or equal to {elen}. ')
                     msg = msg.format(elen = pi.length, nlen=len(str(xmp_obj)))
                     raise XMPError(msg)
-        _, pi = _cexempi.files_get_xmp_xmpstring(self.xmpfileptr)
         _cexempi.files_put_xmp(self.xmpfileptr, xmpptr)
 
     def can_put_xmp(self, xmp_obj):
