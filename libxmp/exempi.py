@@ -40,6 +40,7 @@ import ctypes.util
 import datetime
 import os
 import platform
+import sys
 
 import pytz
 
@@ -76,9 +77,16 @@ def _load_exempi():
     path = ctypes.util.find_library('exempi')
     if path is None:
         if platform.system().startswith('Darwin'):
-            if os.path.exists('/opt/local/lib/libexempi.dylib'):
-                # MacPorts starndard location.
-                path = '/opt/local/lib/libexempi.dylib'
+            # Anaconda?
+            if 'Anaconda' in sys.version:
+                path = os.path.dirname(os.path.dirname(sys.executable))
+                path = os.path.join(path, 'lib', 'libexempi.dylib')
+                if os.path.exists(path):
+                    return ctypes.CDLL(path)
+            # MacPorts?
+            path = '/opt/local/lib/libexempi.dylib'
+            if os.path.exists(path):
+                return ctypes.CDLL(path)
 
     if path is None:
         raise ExempiLoadError('Exempi library not found.')
