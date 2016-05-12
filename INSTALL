@@ -39,11 +39,12 @@ systems package manager, e.g.::
 
     sudo apt-get install libexempi3  # (Ubuntu/Debian)
     brew install exempi  # (Homebrew on OS X)
+    port install exempi  # (MacPorts)
 
 Mac OS X
 --------
 Note Exempi requires boost (http://www.boost.org/) to compile, so on OS
-X you probably need to run configure with one of the following options::
+X you may need to run configure with one of the following options::
 
   ./configure --with-boost=/usr/local # (for Homebrew)
   ./configure --with-darwinports

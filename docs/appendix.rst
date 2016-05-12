@@ -3,8 +3,6 @@ Appendix
 
 Known Issues
 ------------
- * The version of libexempi that comes via Macports refuses to load via ctypes.
-   As a workaround, you should compile libexempi from source.
 
 Resources
 ---------
