@@ -505,11 +505,15 @@ class TestIteration(unittest.TestCase):
 
         return schemas, paths, props
 
-    @unittest.skip("Issue 27")
-    def test_namespaces(self):
-        """Iterate through the namespaces."""
+    def test_iterate_namespaces(self):
+        """
+        iter_namespaces is not supported
+
+        iter_namespaces causes segfaults, seemingly for any use
+        """
         options = XMP_ITERATOR_OPTIONS['iter_namespaces']
-        schemas, paths, props = self.collect_iteration(None, None, options)
+        with self.assertRaises(RuntimeError):
+            schemas, paths, props = self.collect_iteration(None, None, options)
 
     def test_single_namespace_single_path_leaf_nodes(self):
         """Get all the leaf nodes from a single path, single namespace."""

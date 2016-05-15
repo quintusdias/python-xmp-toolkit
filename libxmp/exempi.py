@@ -43,7 +43,7 @@ import platform
 import pytz
 
 from . import XMPError, ExempiLoadError
-from .consts import XMP_OPEN_READ, XMP_OPEN_NOOPTION
+from . import consts
 
 def _load_exempi():
     """
@@ -450,7 +450,8 @@ def files_open(xfptr, filename, options):
     XMPError : if the corresponding library routine fails
     """
     if (((not os.path.exists(filename)) and
-         ((options == XMP_OPEN_NOOPTION) or (options & XMP_OPEN_READ)))):
+         ((options == consts.XMP_OPEN_NOOPTION) or 
+          (options & consts.XMP_OPEN_READ)))):
         raise IOError("{0} does not exist.".format(filename))
     EXEMPI.xmp_files_open.restype = check_error
     EXEMPI.xmp_files_open.argtypes = [ctypes.c_void_p,
@@ -488,7 +489,7 @@ def files_open_new(filename, options):
     xfptr : ctypes pointer
         File pointer.
     """
-    if not os.path.exists(filename) and options & XMP_OPEN_READ:
+    if not os.path.exists(filename) and options & consts.XMP_OPEN_READ:
         raise IOError("{0} does not exist.".format(filename))
     EXEMPI.xmp_files_open_new.restype = ctypes.c_void_p
     EXEMPI.xmp_files_open_new.argtypes = [ctypes.c_void_p, ctypes.c_int32]
@@ -1040,6 +1041,10 @@ def iterator_new(xmp, schema, propname, options):
     if propname is not None:
         propname = propname.encode('utf-8')
 
+    if options & consts.XMP_ITER_NAMESPACES:
+        raise RuntimeError('"XMP_ITER_NAMESPACES is not supported at this '
+                           'time.')
+
     iterator = EXEMPI.xmp_iterator_new(xmp, schema, propname, options)
     return iterator
 
@@ -1206,6 +1211,7 @@ def register_namespace(namespace_uri, prefix):
 
     return registered_prefix
 
+
 def serialize(xmp, options, padding):
     """Serialize the XMP Packet.
 
@@ -1280,7 +1286,9 @@ def serialize_and_format(xmp, options, padding, newline, tab, indent):
                                                 ctypes.c_int32]
     _item = _string_new()
     EXEMPI.xmp_serialize_and_format(xmp, _item, options, padding,
-                                    newline.encode('utf-8'), tab.encode('utf-8'), indent)
+                                    newline.encode('utf-8'),
+                                    tab.encode('utf-8'),
+                                    indent)
 
     item = string_cstr(_item)
     _string_free(_item)
@@ -1385,6 +1393,7 @@ def set_localized_text(xmp, schema, name, generic_lang, specific_lang, value,
                                   value.encode('utf-8'),
                                   mask)
 
+
 def set_property(xmp, schema, name, value, option_bits=0):
     """Set an XMP property in the XMP packet.
 
@@ -1485,10 +1494,10 @@ def set_property_date(xmp, schema, name, the_date, option_bits=0):
     # Use a function callback instead of returning a boolean value.
     EXEMPI.xmp_set_property_date.restype = check_error
     EXEMPI.xmp_set_property_date.argtypes = [ctypes.c_void_p,
-                                              ctypes.c_char_p,
-                                              ctypes.c_char_p,
-                                              ctypes.POINTER(XmpDateTime),
-                                              ctypes.c_uint32]
+                                             ctypes.c_char_p,
+                                             ctypes.c_char_p,
+                                             ctypes.POINTER(XmpDateTime),
+                                             ctypes.c_uint32]
 
     if the_date.tzinfo is not None:
         the_date = the_date.astimezone(pytz.utc)
