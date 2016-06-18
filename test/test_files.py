@@ -35,7 +35,6 @@
 import os
 import os.path
 import pkg_resources
-import platform
 import re
 import shutil
 import sys
@@ -60,11 +59,10 @@ from libxmp.consts import XMP_NS_Photoshop as NS_PHOTOSHOP
 from libxmp.consts import XMP_FT_TEXT
 from libxmp.consts import XMP_FT_PDF
 from libxmp.consts import XMP_FT_ILLUSTRATOR
-from libxmp.consts import XMP_FT_MOV
 from libxmp.consts import XMP_FT_XML
-from libxmp import exempi
 from .common_fixtures import setup_sample_files
 from .samples import open_flags
+
 
 class XMPFilesTestCase(unittest.TestCase):
     def setUp(self):
@@ -73,6 +71,19 @@ class XMPFilesTestCase(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.tempdir)
+
+    def test_invalid_xmp_in_tiff(self):
+        """
+        Invalid XMP in TIFF, tag 700
+
+        See issue 61
+        """
+        xmpf = XMPFiles()
+        filename = pkg_resources.resource_filename(__name__,
+                                                   "samples/issue61.tif")
+        xmpf.open_file(file_path=filename)
+        with self.assertRaises(XMPError):
+            xmpf.get_xmp()
 
     def test_repr(self):
         """Test __repr__ and __str__ on XMPFiles objects."""
@@ -91,8 +102,6 @@ class XMPFilesTestCase(unittest.TestCase):
         self.assertIsNotNone(regex.match(actual_value))
         self.assertTrue(actual_value.endswith("BlueSquare.jpg')"))
 
-
-
     def test_print_bom(self):
         """Should be able to print XMP packets despite BOM."""
         # The BOM cannot be decoded from utf-8 into ascii, so a 2.7 XMPMeta
@@ -103,21 +112,20 @@ class XMPFilesTestCase(unittest.TestCase):
         xmpf = XMPFiles()
         xmpf.open_file(file_path=filename)
         xmp = xmpf.get_xmp()
-        with patch('sys.stdout', new=StringIO()) as fake_out:
+        with patch('sys.stdout', new=StringIO()):
             print(xmp)
             repr(xmp)
         self.assertTrue(True)
 
-
     def test_init_del(self):
         xmpfile = XMPFiles()
-        self.assertTrue( xmpfile.xmpfileptr )
+        self.assertTrue(xmpfile.xmpfileptr)
         del xmpfile
 
     def test_test_files(self):
         for filename in self.samplefiles:
             self.assertTrue(os.path.exists(filename),
-                            "Test file does not exists." )
+                            "Test file does not exists.")
 
     def test_open_file(self):
         # Non-existing file.
@@ -126,12 +134,12 @@ class XMPFilesTestCase(unittest.TestCase):
             xmpfile.open_file('')
 
         xmpfile = XMPFiles()
-        xmpfile.open_file( self.samplefiles[0] )
-        self.assertRaises( XMPError, xmpfile.open_file, self.samplefiles[0] )
-        self.assertRaises( XMPError, xmpfile.open_file, self.samplefiles[1] )
+        xmpfile.open_file(self.samplefiles[0])
+        self.assertRaises(XMPError, xmpfile.open_file, self.samplefiles[0])
+        self.assertRaises(XMPError, xmpfile.open_file, self.samplefiles[1])
         xmpfile.close_file()
-        xmpfile.open_file( self.samplefiles[1] )
-        self.assertRaises( XMPError, xmpfile.open_file, self.samplefiles[0] )
+        xmpfile.open_file(self.samplefiles[1])
+        self.assertRaises(XMPError, xmpfile.open_file, self.samplefiles[0])
 
         # Open all sample files.
         for filename in self.samplefiles:
@@ -145,7 +153,7 @@ class XMPFilesTestCase(unittest.TestCase):
     def test_open_file_with_options(self):
         """Try all open options"""
         for flg in open_flags:
-            kwargs = { flg: True }
+            kwargs = {flg: True}
 
             for filename in self.samplefiles:
                 if flg == 'open_usesmarthandler':
@@ -175,7 +183,6 @@ class XMPFilesTestCase(unittest.TestCase):
             with self.assertRaises(XMPError):
                 xmpfile.open_file(filename, open_usesmarthandler=True)
 
-
     def test_open_open_limitscanning(self):
         """Verify this library failure."""
         # Issue 5
@@ -188,23 +195,22 @@ class XMPFilesTestCase(unittest.TestCase):
             with self.assertRaises(XMPError):
                 xmpfile.open_file(filename, open_limitscanning=True)
 
-
     def test_close_file(self):
         for filename in self.samplefiles:
-            xmpfile = XMPFiles( file_path=filename )
+            xmpfile = XMPFiles(file_path=filename)
             xmpfile.close_file()
 
     def test_get_xmp(self):
         for flg in open_flags:
-            kwargs = { flg: True }
+            kwargs = {flg: True}
             for filename, fmt in zip(self.samplefiles, self.formats):
                 # See test_exempi_error()
                 if not self.flg_fmt_combi(flg, fmt):
-                    xmpfile = XMPFiles( file_path=filename, **kwargs )
+                    xmpfile = XMPFiles(file_path=filename, **kwargs)
                     try:
                         xmp = xmpfile.get_xmp()
                         self.assertTrue(isinstance(xmp, XMPMeta),
-                                        "Not an XMPMeta object" )
+                                        "Not an XMPMeta object")
                     except XMPError:
                         print(filename)
                         print(flg)
@@ -213,20 +219,20 @@ class XMPFilesTestCase(unittest.TestCase):
 
     def test_can_put_xmp(self):
         for flg in open_flags:
-            kwargs = { flg: True }
+            kwargs = {flg: True}
             for filename, fmt in zip(self.samplefiles, self.formats):
                 # See test_exempi_error()
                 if (((not self.flg_fmt_combi(flg, fmt)) and
                      (not self.exempi_problem(flg, fmt)))):
                     xmpfile = XMPFiles()
-                    xmpfile.open_file( filename, **kwargs )
+                    xmpfile.open_file(filename, **kwargs)
                     xmp = xmpfile.get_xmp()
                     if flg == 'open_forupdate':
-                        self.assertTrue( xmpfile.can_put_xmp( xmp ) )
+                        self.assertTrue(xmpfile.can_put_xmp(xmp))
                     else:
-                        self.assertFalse( xmpfile.can_put_xmp( xmp ) )
+                        self.assertFalse(xmpfile.can_put_xmp(xmp))
 
-    def flg_fmt_combi( self, flg, fmt ):
+    def flg_fmt_combi(self, flg, fmt):
         """ See test_exempi_bad_combinations """
         if flg == 'open_usesmarthandler':
             if fmt in [XMP_FT_TEXT, XMP_FT_PDF, XMP_FT_ILLUSTRATOR]:
@@ -245,18 +251,18 @@ class XMPFilesTestCase(unittest.TestCase):
         # Certain combinations of formats and open flags will raise an XMPError
         # when you try to open the XMP
         for flg in open_flags:
-            kwargs = { flg: True }
+            kwargs = {flg: True}
             for filename, fmt in zip(self.samplefiles, self.formats):
                 if not self.flg_fmt_combi(flg, fmt):
                     xmpfile = XMPFiles()
-                    xmpfile.open_file( filename, **kwargs )
+                    xmpfile.open_file(filename, **kwargs)
                     xmpfile.get_xmp()
                 else:
                     xmpfile = XMPFiles()
                     with self.assertRaises(XMPError):
-                        xmpfile.open_file( filename, **kwargs )
+                        xmpfile.open_file(filename, **kwargs)
 
-    def exempi_problem( self, flg, fmt ):
+    def exempi_problem(self, flg, fmt):
         """
         Special case hazardous for Python because of an exempi bug.
 
@@ -269,7 +275,8 @@ class XMPFilesTestCase(unittest.TestCase):
         """
         Test case that exposes an Exempi bug.
 
-        Seems like xmp_files_can_put_xmp in exempi is missing a try/catch block.
+        Seems like xmp_files_can_put_xmp in exempi is missing a try/catch
+        block.
 
         So loading a sidecar file and call can_put_xmp will kill python
         interpreter since a C++ exception is thrown.
@@ -277,9 +284,9 @@ class XMPFilesTestCase(unittest.TestCase):
         filename = pkg_resources.resource_filename(__name__,
                                                    "samples/sig05-002a.xmp")
         xmpfile = XMPFiles()
-        xmpfile.open_file(filename, open_forupdate = True )
+        xmpfile.open_file(filename, open_forupdate=True)
         xmp = xmpfile.get_xmp()
-        xmpfile.can_put_xmp( xmp )
+        xmpfile.can_put_xmp(xmp)
 
     def test_write_in_readonly(self):
         """If not "open_forupdate = True", should raise exception"""
@@ -289,9 +296,9 @@ class XMPFilesTestCase(unittest.TestCase):
         filename = os.path.join(self.tempdir, 'sig05-002a.tif')
         xmpfile.open_file(filename)
         xmp_data = xmpfile.get_xmp()
-        xmp_data.set_property( NS_PHOTOSHOP, 'Headline', "Some text")
-        self.assertRaises( XMPError, xmpfile.put_xmp, xmp_data )
-        self.assertEqual( xmpfile.can_put_xmp( xmp_data ), False )
+        xmp_data.set_property(NS_PHOTOSHOP, 'Headline', "Some text")
+        self.assertRaises(XMPError, xmpfile.put_xmp, xmp_data)
+        self.assertEqual(xmpfile.can_put_xmp(xmp_data), False)
 
     def test_tiff_smarthandler(self):
         """Verify action of TIFF smarthandler when tag length > 255"""
@@ -318,13 +325,13 @@ class XMPFilesTestCase(unittest.TestCase):
             self.assertEqual(prop, blurb * 10)
 
 
-
 def suite():
     the_suite = unittest.TestSuite()
     the_suite.addTest(unittest.makeSuite(XMPFilesTestCase))
     return the_suite
 
-def test( verbose=2 ):
+
+def test(verbose=2):
     all_tests = suite()
     runner = unittest.TextTestRunner(verbosity=verbose)
     result = runner.run(all_tests)
